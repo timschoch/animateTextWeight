@@ -1,3 +1,6 @@
 {
-  "bundles": []
+  "bundles": [
+    "workflow",
+    "tech-typescript"
+  ]
 }
