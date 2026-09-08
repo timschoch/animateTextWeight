@@ -27,7 +27,7 @@ const sources = new WeakMap<HTMLElement, Node[]>();
 
 export interface Line {
   text: string;
-  /** Width at the rest weight, px. */
+  /** Width at the from weight, px. */
   target: number;
   /** Natural width at each stop, px. */
   widths: number[];
@@ -45,7 +45,7 @@ export interface Report {
 
 /**
  * The weight range set in CSS, or null when the element does not animate.
- * --animate-weight-from is optional: the element's font-weight is the rest.
+ * --animate-weight-from is optional: the element's font-weight is the from weight.
  */
 export function range(el: Element): { from: number; to: number } | null {
   const cs = getComputedStyle(el);
@@ -102,9 +102,9 @@ export function calibrate(el: HTMLElement): Report | null {
   if (!r) return null;
   const { from, to } = r;
   const weights = Array.from({ length: STOPS }, (_, k) => from + ((to - from) * k) / (STOPS - 1));
-  // The element's own spacing is the rest state; every stop adds to it.
+  // The element's own spacing is the from state; every stop adds to it.
   const base = parseFloat(getComputedStyle(el).letterSpacing) || 0;
-  // Lines break at the rest weight, so the element must sit there.
+  // Lines break at the from weight, so the element must sit there.
   if (Number(getComputedStyle(el).fontWeight) !== from) el.style.fontWeight = String(from);
 
   restore(el);

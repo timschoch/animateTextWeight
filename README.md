@@ -4,8 +4,8 @@ Animate a headline, button or link between two weights of a variable font.
 The text can span one line or several, but it works best on short text.
 Body text animates fine in Chrome, but jitters in Firefox.
 
-- The element keeps its default width, so no line moves and no line break changes.
-- The default state keeps your letter-spacing. The animated state gets
+- The element keeps its default `from-weight` width, so no line moves and no line break changes.
+- The `from` state keeps your letter-spacing. The `to` state gets
   spacing matched per line, so every line ends where it started.
 
 Everything you write lives in CSS, in your components. There is no
@@ -16,8 +16,7 @@ pre-rendered, the browser measures at runtime.
 ## Sandbox
 
 Run `npm run demo` and open `http://localhost:3000/demo/`. Type any text,
-set width, size and the two weights, hover the preview. The table shows how
-far each line lands from its width at rest, per stop.
+set width, size and the two weights, hover the preview.
 
 ## Use
 
@@ -29,8 +28,8 @@ import { init } from "animate-text-weight";
 init();
 ```
 
-Set the end weight on the element, then switch it on wherever you like.
-The element's own `font-weight` is the rest weight:
+Set the `to` weight on the element, then switch it on wherever you like.
+The element's own `font-weight` is the `from` weight:
 
 ```css
 h1 { font-weight: 200; --animate-weight-to: 700; }
@@ -38,6 +37,6 @@ section:hover h1, section.active h1 { --animate-weight: true; }
 ```
 
 `--animate-weight` inherits, so you can set it on the section instead of
-each heading. `--animate-weight-from` overrides the rest weight when you
+each heading. `--animate-weight-from` overrides the `from` weight when you
 need it. Duration and easing: `--animate-weight-duration` and
 `--animate-weight-easing` on `:root`.

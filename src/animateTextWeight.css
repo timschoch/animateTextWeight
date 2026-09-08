@@ -3,8 +3,8 @@
  * every line at its width.
  *
  * You write three things, all in CSS, on the element:
- *   --animate-weight-from: 200;   rest weight
- *   --animate-weight-to:   700;   animated weight
+ *   --animate-weight-from: 200;   the weight it animates from
+ *   --animate-weight-to:   700;   the weight it animates to
  *   --animate-weight:      true;  on any state or ancestor: switch it on
  *
  * The script (index.ts) splits the element into one span per rendered
