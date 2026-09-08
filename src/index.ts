@@ -5,7 +5,7 @@
  * A string's width at a weight depends on its letters, so no table per font
  * can hold every text to the same width, and one spacing per element can
  * hold one line only. So the element is split into its rendered lines, one
- * span per line, and each span gets its own eleven --atw-ls-<stop> values.
+ * span per line, and each span gets its own ten --atw-ls-<stop> values.
  * animateTextWeight.css reads them.
  *
  * The element says what it wants in CSS: --animate-weight-from and
@@ -19,8 +19,8 @@
 
 /** Class of one rendered line, styled by animateTextWeight.css. */
 export const LINE = "animate-text-weight-line";
-/** Segments between the two weights; the CSS map has SEGMENTS + 1 stops. */
-const SEGMENTS = 10;
+/** The CSS map has STOPS values, --atw-ls-0 to --atw-ls-(STOPS - 1). */
+const STOPS = 10;
 
 /** Original child nodes of each split element, so it can be split again. */
 const sources = new WeakMap<HTMLElement, Node[]>();
@@ -101,7 +101,7 @@ export function calibrate(el: HTMLElement): Report | null {
   const r = range(el);
   if (!r) return null;
   const { from, to } = r;
-  const weights = Array.from({ length: SEGMENTS + 1 }, (_, k) => from + ((to - from) * k) / SEGMENTS);
+  const weights = Array.from({ length: STOPS }, (_, k) => from + ((to - from) * k) / (STOPS - 1));
   // The element's own spacing is the rest state; every stop adds to it.
   const base = parseFloat(getComputedStyle(el).letterSpacing) || 0;
   // Lines break at the rest weight, so the element must sit there.

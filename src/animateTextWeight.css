@@ -9,7 +9,7 @@
  *
  * The script (index.ts) splits the element into one span per rendered
  * line, class .animate-text-weight-line, and writes on each span the two
- * weights and eleven letter-spacing values, --atw-ls-0 to --atw-ls-10, one per
+ * weights and ten letter-spacing values, --atw-ls-0 to --atw-ls-9, one per
  * stop between the two weights. The span tweens --animate-weight-progress
  * from 0 to 1; weight and spacing follow from it below.
  */
@@ -48,22 +48,21 @@
     var(--atw-from) + (var(--atw-to) - var(--atw-from)) * var(--animate-weight-progress)
   );
   /*
-   * Piecewise-linear over the eleven stops. Each clamp() is the progress
-   * inside one tenth, 0 to 1; the sum walks the stops up to the current
+   * Piecewise-linear over the ten stops. Each clamp() is the progress
+   * inside one ninth, 0 to 1; the sum walks the stops up to the current
    * progress and adds each one's spacing delta.
    */
   letter-spacing: calc(
     var(--atw-ls-0) + (var(--atw-ls-1) - var(--atw-ls-0)) *
-      clamp(0, var(--animate-weight-progress) * 10 - 0, 1) +
-      (var(--atw-ls-2) - var(--atw-ls-1)) * clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
-      (var(--atw-ls-3) - var(--atw-ls-2)) * clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
-      (var(--atw-ls-4) - var(--atw-ls-3)) * clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
-      (var(--atw-ls-5) - var(--atw-ls-4)) * clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
-      (var(--atw-ls-6) - var(--atw-ls-5)) * clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
-      (var(--atw-ls-7) - var(--atw-ls-6)) * clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
-      (var(--atw-ls-8) - var(--atw-ls-7)) * clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
-      (var(--atw-ls-9) - var(--atw-ls-8)) * clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
-      (var(--atw-ls-10) - var(--atw-ls-9)) * clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
+      clamp(0, var(--animate-weight-progress) * 9 - 0, 1) +
+      (var(--atw-ls-2) - var(--atw-ls-1)) * clamp(0, var(--animate-weight-progress) * 9 - 1, 1) +
+      (var(--atw-ls-3) - var(--atw-ls-2)) * clamp(0, var(--animate-weight-progress) * 9 - 2, 1) +
+      (var(--atw-ls-4) - var(--atw-ls-3)) * clamp(0, var(--animate-weight-progress) * 9 - 3, 1) +
+      (var(--atw-ls-5) - var(--atw-ls-4)) * clamp(0, var(--animate-weight-progress) * 9 - 4, 1) +
+      (var(--atw-ls-6) - var(--atw-ls-5)) * clamp(0, var(--animate-weight-progress) * 9 - 5, 1) +
+      (var(--atw-ls-7) - var(--atw-ls-6)) * clamp(0, var(--animate-weight-progress) * 9 - 6, 1) +
+      (var(--atw-ls-8) - var(--atw-ls-7)) * clamp(0, var(--animate-weight-progress) * 9 - 7, 1) +
+      (var(--atw-ls-9) - var(--atw-ls-8)) * clamp(0, var(--animate-weight-progress) * 9 - 8, 1)
   );
   transition: --animate-weight-progress var(--animate-weight-duration) var(--animate-weight-easing);
 }
