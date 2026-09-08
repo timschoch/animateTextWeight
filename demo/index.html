@@ -269,7 +269,7 @@
 
       <label for="spacing">Spacing</label>
       <div><input type="range" id="spacing" min="-5" max="10" step="0.1" value="0" /> <input type="number" step="0.1" value="0" /> px<br>
-        <span class="label">the spacing you want the default state to have, appliedin your css file</span>
+        <span class="label">the spacing you want the <i>from</i> state to have, applied in your css file</span>
       </div>
 
       <label for="width">Container width</label>
@@ -279,7 +279,7 @@
     
     <h2>Measurements</h2>
     <div id="measurements"></div>
-    <div class="label"><b>Difference in px</b> to the default width, per line and weight</div>
+    <div class="label"><b>Difference in px</b> to the <i>from-weight</i> width, per line and weight</div>
     <table id="log"></table>
 
     <h2>Without corrections</h2>
@@ -407,7 +407,7 @@
 
         // The script splits the preview into line spans and writes each
         // line's spacing. Then one frozen clone per stop, so every line
-        // should end where it ends at rest.
+        // should end where it ends at the from weight.
         const r = calibrate(preview);
         if (!r) return;
         measurements.replaceChildren();
@@ -426,7 +426,7 @@
           offBy.set(w, spans.map((s, i) => s.getBoundingClientRect().width - r.lines[i].target));
         });
 
-        // One row per line: how far off its width at rest it is, at each stop.
+        // One row per line: how far off its from-weight width it is, at each stop.
         log.innerHTML =
           `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${w}</th>`).join("")}</tr>` +
           r.lines
