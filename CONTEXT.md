@@ -5,7 +5,7 @@ A CSS/JS library that tweens text between two variable-font weights while keepin
 ## Language
 
 **Animated element**:
-An element carrying a to weight in CSS (`--animate-weight-to`), the unit this library finds and calibrates.
+An element carrying a `to` weight in CSS (`--animate-weight-to`), the unit this library finds and calibrates.
 _Avoid_: target, node.
 
 **From weight**:
@@ -21,11 +21,11 @@ One rendered (wrapped) line of an animated element's text, frozen into its own `
 _Avoid_: segment, row.
 
 **Stop**:
-One of the ten sampled points between the from and to weight, each holding its own letter-spacing value written as `--atw-ls-<n>`.
+One of the ten sampled points between the `from` and `to` weight, each holding its own letter-spacing value written as `--atw-ls-<n>`.
 _Avoid_: step, keyframe.
 
 **Target width**:
-A line's width at the from weight — the width every stop's letter-spacing is chosen to match.
+A line's width at the `from` weight — the width every stop's letter-spacing is chosen to match.
 
 **Calibration**:
 Splitting an animated element into lines and computing each line's target width and per-stop letter-spacing. Runs on load and again on resize.
