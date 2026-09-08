@@ -4,7 +4,10 @@
   "description": "Animate short text between two weights of a variable font without moving a single line.",
   "license": "MIT",
   "author": "Tim Schoch",
-  "repository": "github:timschoch/animateTextWeight",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timschoch/animateTextWeight.git"
+  },
   "type": "module",
   "exports": {
     ".": {

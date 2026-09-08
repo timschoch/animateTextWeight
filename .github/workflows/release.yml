@@ -8,17 +8,36 @@ concurrency:
   group: release
   cancel-in-progress: false
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - uses: googleapis/release-please-action@v5
         id: release
         with:
           release-type: node
-      # Per-project deploy steps go below, each gated on:
-      #   if: steps.release.outputs.release_created == 'true'
+
+  # Publishes with npm trusted publishing (OIDC) — no npm token.
+  # The package is linked to this workflow on npmjs.com.
+  publish:
+    needs: release
+    if: needs.release.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access public
