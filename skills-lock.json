@@ -157,6 +157,12 @@
       "skillPath": "skills/engineering/prototype/SKILL.md",
       "computedHash": "d3fc74689bd993e39c44bfae510d014eecffbeec2922764b065377fd1327c0f6"
     },
+    "publish-npm-package": {
+      "source": "yigitkonur/skills-by-yigitkonur",
+      "sourceType": "github",
+      "skillPath": "skills/publish-npm-package/SKILL.md",
+      "computedHash": "c5bd25ce6e3035a4360cb9385c4ab91fed99691fb4c5e0692c0000ea3873b128"
+    },
     "qa": {
       "source": "timschoch/skilly",
       "sourceType": "github",
