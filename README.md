@@ -32,11 +32,45 @@ Set the `to` weight on the element, then switch it on wherever you like.
 The element's own `font-weight` is the `from` weight:
 
 ```css
-h1 { font-weight: 200; --animate-weight-to: 700; }
-section:hover h1, section.active h1 { --animate-weight: true; }
+h1 {
+  font-weight: 200;
+  --animate-weight-to: 700;
+}
+section:hover h1,
+section.active h1 {
+  --animate-weight: true;
+}
 ```
 
 `--animate-weight` inherits, so you can set it on the section instead of
 each heading. `--animate-weight-from` overrides the `from` weight when you
 need it. Duration and easing: `--animate-weight-duration` and
 `--animate-weight-easing` on `:root`.
+
+## Animate other properties with the weight animation
+
+The span that animates carries class `animate-text-weight-unit` and tweens
+`--animate-weight-progress` on itself from 0 to 1. Read that value to tie any
+other property to the same curve — here the text fades in as it gets bolder:
+
+```css
+.animate-text-weight-unit {
+  opacity: clamp(0, var(--animate-weight-progress), 1);
+}
+```
+
+This works for character animations too, with nothing added. In character mode
+the unit is the character, so each one carries its own progress and its own
+delay, and the fade arrives as a wave:
+
+```css
+h1 {
+  font-weight: 200;
+  --animate-weight-to: 700;
+  --animate-weight-by: character;
+  --animate-weight-delay: 40ms;
+}
+```
+
+Clamp anything you read, the way the library does: an easing may overshoot 0
+or 1.
