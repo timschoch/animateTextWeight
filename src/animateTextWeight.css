@@ -7,11 +7,28 @@
  *   --animate-weight-to:   700;   the weight it animates to
  *   --animate-weight:      true;  on any state or ancestor: switch it on
  *
+ * And two more if you want the text to arrive in a wave:
+ *   --animate-weight-by:    character;  one unit per character, not per line
+ *   --animate-weight-delay: 40ms;       one unit waits this long after the one before it
+ *
  * The script (index.ts) splits the element into one span per rendered
- * line, class .animate-text-weight-line, and writes on each span the two
- * weights and ten letter-spacing values, --atw-ls-0 to --atw-ls-9, one per
- * stop between the two weights. The span tweens --animate-weight-progress
- * from 0 to 1; weight and spacing follow from it below.
+ * line, class .animate-text-weight-line, and in character mode splits each
+ * of those again into one span per character. Whichever span animates gets
+ * class .animate-text-weight-unit and carries the two weights, its delay
+ * count, and eleven values, one per stop between the two weights. A unit
+ * tweens --animate-weight-progress from 0 to 1, and its weight follows.
+ *
+ * How the width is held differs by mode.
+ *
+ * A line holds its own, with eleven letter-spacing values, --atw-ls-0 to
+ * --atw-ls-10, that take back what the line gains as it gets bolder.
+ *
+ * A character asks for room instead, eleven widths, --atw-w-0 to --atw-w-10,
+ * used as its flex basis. Its line is a flex line of a fixed width,
+ * --atw-width, and every character asks for slightly less than it needs, so
+ * there is always room left over for flexbox to hand out in equal parts. The
+ * line's width is a number, so nothing the characters do can move it, and the
+ * equal parts are what a letter-spacing on a whole line does.
  */
 @property --animate-weight-from {
   syntax: "<number>";
@@ -33,6 +50,29 @@
   inherits: false;
   initial-value: 0;
 }
+/* These two are set on the element but read on a unit inside it. */
+@property --animate-weight-by {
+  syntax: "line | character";
+  inherits: true;
+  initial-value: line;
+}
+@property --animate-weight-delay {
+  syntax: "<time>";
+  inherits: true;
+  initial-value: 0s;
+}
+/* How many delays this unit waits: the count of the one before it, plus one. */
+@property --atw-delay-count {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+/* The width a line is held at. */
+@property --atw-width {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
 
 :root {
   --animate-weight-duration: 300ms;
@@ -44,32 +84,135 @@
   white-space: nowrap;
   /* Fractional glyph advances, so Firefox does not snap letters mid-tween. */
   text-rendering: geometricPrecision;
-  font-weight: calc(
-    var(--atw-from) + (var(--atw-to) - var(--atw-from)) * var(--animate-weight-progress)
-  );
   /*
-   * Piecewise-linear over the ten stops. Each clamp() is the progress
-   * inside one ninth, 0 to 1; the sum walks the stops up to the current
-   * progress and adds each one's spacing delta.
+   * A browser drops common ligatures the moment a letter-spacing is anything
+   * but zero. The spacing here is zero at the from weight and not zero after
+   * it, so an fi would come apart on the first stop and the line would change
+   * shape as it moves — and lose the width the lock is holding. Asking for the
+   * features by name is what holds them: font-variant-ligatures does not
+   * (Chrome 143). Inherited, so a merged unit keeps its ligature too.
    */
-  letter-spacing: calc(
-    var(--atw-ls-0) + (var(--atw-ls-1) - var(--atw-ls-0)) *
-      clamp(0, var(--animate-weight-progress) * 9 - 0, 1) +
-      (var(--atw-ls-2) - var(--atw-ls-1)) * clamp(0, var(--animate-weight-progress) * 9 - 1, 1) +
-      (var(--atw-ls-3) - var(--atw-ls-2)) * clamp(0, var(--animate-weight-progress) * 9 - 2, 1) +
-      (var(--atw-ls-4) - var(--atw-ls-3)) * clamp(0, var(--animate-weight-progress) * 9 - 3, 1) +
-      (var(--atw-ls-5) - var(--atw-ls-4)) * clamp(0, var(--animate-weight-progress) * 9 - 4, 1) +
-      (var(--atw-ls-6) - var(--atw-ls-5)) * clamp(0, var(--animate-weight-progress) * 9 - 5, 1) +
-      (var(--atw-ls-7) - var(--atw-ls-6)) * clamp(0, var(--animate-weight-progress) * 9 - 6, 1) +
-      (var(--atw-ls-8) - var(--atw-ls-7)) * clamp(0, var(--animate-weight-progress) * 9 - 7, 1) +
-      (var(--atw-ls-9) - var(--atw-ls-8)) * clamp(0, var(--animate-weight-progress) * 9 - 8, 1)
-  );
-  transition: --animate-weight-progress var(--animate-weight-duration) var(--animate-weight-easing);
+  font-feature-settings:
+    "liga" 1,
+    "clig" 1;
 }
 
-/* The switch. The element is the line's style container. */
+/*
+ * A line whose characters carry the tween is a flex line of a fixed width.
+ *
+ * That is what holds it. Every character asks for a little less room than it
+ * needs (see the basis below), so the line always has some room left over, and
+ * flexbox hands that room out in equal parts. Equal parts is what one
+ * letter-spacing over a line does, so the letters fit the way line mode fits
+ * them — and because the line's width is a number, not a sum, nothing the
+ * characters do inside can move it.
+ */
+.animate-text-weight-line:has(> .animate-text-weight-char) {
+  display: inline-flex;
+  align-items: baseline;
+  width: var(--atw-width);
+}
+
+/*
+ * One character, in a box of its own. The box stops neighbouring glyphs kerning
+ * into each other, so what was measured is what is drawn; the kerning they give
+ * up is already in the widths below.
+ */
+.animate-text-weight-char {
+  display: inline-block;
+  /* A character can be a lone space, and a lone space must not collapse. */
+  white-space: pre;
+  /* Take an equal part of whatever room the line has left. */
+  flex: 1 1 auto;
+  min-width: 0;
+  /* The element's own spacing is inside the box widths already. */
+  letter-spacing: 0;
+  /*
+   * No ligatures. A character has its own box, so two of them can never join
+   * into one glyph anyway; saying so here is what makes the measurement agree,
+   * because the line is still one piece while it is measured and would ligate.
+   * A box sized for half of an fi, holding a whole f, would crowd its
+   * neighbour. This is the one thing character mode gives up.
+   */
+  font-feature-settings:
+    "liga" 0,
+    "clig" 0;
+  /*
+   * How much room the character asks for: its own kerned advance at its own
+   * weight, less a reserve. It is always a little short, which is what leaves
+   * the line room to hand out. See fit() in index.ts.
+   *
+   * Piecewise-linear over the eleven stops. Each clamp() is the progress inside
+   * one tenth, 0 to 1; the sum walks the stops up to the current progress and
+   * adds each one's change of width.
+   */
+  flex-basis: calc(
+    var(--atw-w-0) + (var(--atw-w-1) - var(--atw-w-0)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 0, 1) +
+      (var(--atw-w-2) - var(--atw-w-1)) * clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
+      (var(--atw-w-3) - var(--atw-w-2)) * clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
+      (var(--atw-w-4) - var(--atw-w-3)) * clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
+      (var(--atw-w-5) - var(--atw-w-4)) * clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
+      (var(--atw-w-6) - var(--atw-w-5)) * clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
+      (var(--atw-w-7) - var(--atw-w-6)) * clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
+      (var(--atw-w-8) - var(--atw-w-7)) * clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
+      (var(--atw-w-9) - var(--atw-w-8)) * clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
+      (var(--atw-w-10) - var(--atw-w-9)) * clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
+  );
+}
+
+/* Whatever animates: the line in line mode, one character in character mode. */
+.animate-text-weight-unit {
+  /*
+   * Clamped, because an easing may overshoot: the spacing below stops at the
+   * last stop, so an unclamped weight would keep going and break the width.
+   */
+  font-weight: calc(
+    var(--atw-from) + (var(--atw-to) - var(--atw-from)) *
+      clamp(0, var(--animate-weight-progress), 1)
+  );
+  transition: --animate-weight-progress var(--animate-weight-duration) var(--animate-weight-easing);
+  /* After the shorthand, which would reset it. */
+  transition-delay: calc(var(--atw-delay-count) * var(--animate-weight-delay));
+}
+
+/*
+ * A line that animates as one piece holds its width the other way: one
+ * letter-spacing, taking back what the whole line gains. Piecewise-linear over
+ * the eleven stops, driven by the line's own progress — it is the only unit
+ * here, so there is nothing to keep in step with.
+ */
+.animate-text-weight-line.animate-text-weight-unit {
+  letter-spacing: calc(
+    var(--atw-ls-0) + (var(--atw-ls-1) - var(--atw-ls-0)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 0, 1) +
+      (var(--atw-ls-2) - var(--atw-ls-1)) * clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
+      (var(--atw-ls-3) - var(--atw-ls-2)) * clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
+      (var(--atw-ls-4) - var(--atw-ls-3)) * clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
+      (var(--atw-ls-5) - var(--atw-ls-4)) * clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
+      (var(--atw-ls-6) - var(--atw-ls-5)) * clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
+      (var(--atw-ls-7) - var(--atw-ls-6)) * clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
+      (var(--atw-ls-8) - var(--atw-ls-7)) * clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
+      (var(--atw-ls-9) - var(--atw-ls-8)) * clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
+      (var(--atw-ls-10) - var(--atw-ls-9)) * clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
+  );
+}
+
+/* The switch. The element is the unit's style container. */
 @container style(--animate-weight: true) {
-  .animate-text-weight-line {
+  .animate-text-weight-unit {
     --animate-weight-progress: 1;
+  }
+}
+
+/*
+ * A delay multiplies the time the text spends moving by the number of units,
+ * so this matters more here than in most places.
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* On the unit, so an element that sets its own values loses to this. */
+  .animate-text-weight-unit {
+    --animate-weight-duration: 0s;
+    --animate-weight-delay: 0s;
   }
 }

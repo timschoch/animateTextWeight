@@ -156,6 +156,32 @@
         --animate-weight: true;
       }
 
+      /*
+       * Onion: every sample drawn on top of the one before it, faint. What
+       * holds still stays sharp, what moves smears.
+       */
+      .onion {
+        position: relative;
+        width: var(--w);
+        font-size: var(--s);
+        line-height: 1.2;
+        outline: 1px solid var(--accent);
+        background: var(--accent-soft);
+        margin-bottom: 24px;
+      }
+      .onion > * {
+        position: absolute;
+        inset: 0 auto auto 0;
+        color: color-mix(in srgb, currentColor 10%, transparent);
+      }
+      /* One layer stays in flow, so the box has a height. */
+      .onion > :first-child {
+        position: relative;
+      }
+      .onion::after {
+        content: attr(data-label);
+      }
+
       /* Every kept copy, with its label to the right. */
       .probe {
         position: relative;
@@ -170,6 +196,7 @@
         content: attr(data-label);
       }
       .probe::after,
+      .onion::after,
       .block .tag {
         position: absolute;
         left: 100%;
@@ -254,6 +281,20 @@
       <label for="from">Weight</label>
       <div>From <select id="from"></select> to <select id="to"></select></div>
 
+      <label for="by">Animate by</label>
+      <div>
+        <select id="by">
+          <option value="line" selected>line</option>
+          <option value="character">character</option>
+        </select><br>
+        <span class="label">by character, every line starts its wave at the same moment and runs to the right</span>
+      </div>
+
+      <label for="delay">Delay</label>
+      <div><input type="range" id="delay" min="0" max="200" step="5" value="0" /> <input type="number" step="5" value="0" /> ms<br>
+        <span class="label">how long one unit waits after the one before it</span>
+      </div>
+
       <label for="size">Size</label>
       <div><input type="range" id="size" min="12" max="200" step="4" value="60" /> <input type="number" value="60" /> px</div>
 
@@ -288,7 +329,7 @@
 
     <script type="module">
       // Run `npm run build` first: the page imports the built script.
-      import { calibrate, LINE } from "../dist/index.js";
+      import { calibrate, LINE, UNIT } from "../dist/index.js";
 
       const $ = (id) => document.getElementById(id);
       const source = $("source");
@@ -299,6 +340,9 @@
       const fields = sliders.map((s) => s.nextElementSibling);
       const selects = ["from", "to"].map($);
       const fontUrl = $("font-url");
+
+      // Read by CSS only, so changing it needs no new measurement.
+      const setDelay = () => preview.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
 
       /** Family name from a Google Fonts CSS URL: family=Lora:ital,wght@... -> Lora. */
       const familyOf = (url) => new URL(url).searchParams.get("family")?.split(":")[0] ?? "";
@@ -396,6 +440,68 @@
         document.documentElement.style.fontFamily = `"${family}", sans-serif`;
       }
 
+      /** The easing set on the preview, as a function of time 0 to 1. */
+      function easing() {
+        const named = { linear: [0, 0, 1, 1], ease: [0.25, 0.1, 0.25, 1] };
+        const curve = getComputedStyle(preview).getPropertyValue("--animate-weight-easing").trim();
+        const found = curve.match(/-?[\d.]+/g);
+        const [x1, y1, x2, y2] = named[curve] ?? (found?.length === 4 ? found.map(Number) : named.ease);
+        // Newton on the x curve, then read y. Eight rounds is plenty at this size.
+        const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+        const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+        return (x) => {
+          let t = x;
+          for (let i = 0; i < 8; i++) {
+            const slope = (3 * ax * t + 2 * bx) * t + cx;
+            if (Math.abs(slope) < 1e-6) break;
+            t -= (((ax * t + bx) * t + cx) * t - x) / slope;
+          }
+          return ((ay * t + by) * t + cy) * t;
+        };
+      }
+
+      /** Every unit at the same progress: one stop, the way a rest state looks. */
+      function stop(units, k, n) {
+        for (const u of units) u.style.setProperty("--animate-weight-progress", (k / (n - 1)).toFixed(4));
+      }
+
+      /**
+       * One moment of the wave, sample k of n: every unit at its own progress,
+       * worked out from the duration, the delay and the easing, the way the css
+       * does it.
+       */
+      function wave(units, k, n) {
+        const ms = (name) => {
+          const v = getComputedStyle(preview).getPropertyValue(name).trim();
+          return parseFloat(v) * (v.endsWith("ms") ? 1 : 1000);
+        };
+        const duration = ms("--animate-weight-duration");
+        const delay = ms("--animate-weight-delay");
+        const ease = easing();
+        const counts = units.map((u) => Number(u.style.getPropertyValue("--atw-delay-count")) || 0);
+        const t = ((duration + Math.max(...counts, 0) * delay) * k) / (n - 1);
+        units.forEach((u, i) => {
+          const p = Math.min(Math.max((t - counts[i] * delay) / duration, 0), 1);
+          u.style.setProperty("--animate-weight-progress", ease(p).toFixed(4));
+        });
+      }
+
+      /** n copies of the preview stacked, each frozen by freeze(). */
+      function onion(label, n, freeze) {
+        const box = document.createElement("div");
+        box.className = "onion";
+        box.dataset.label = label;
+        for (let k = 0; k < n; k++) {
+          const c = preview.cloneNode(true);
+          c.removeAttribute("id");
+          const units = [...c.querySelectorAll(`.${UNIT}`)];
+          for (const u of units) u.style.transition = "none";
+          freeze(units, k, n);
+          box.append(c);
+        }
+        measurements.append(box);
+      }
+
       function update() {
         const [width, size, spacing] = fields.map((f) => Number(f.value));
         document.documentElement.style.setProperty("--w", `${width}px`);
@@ -404,6 +510,7 @@
         preview.style.letterSpacing = `${spacing}px`; // set from outside, like a site would
         preview.style.fontWeight = selects[0].value;
         preview.style.setProperty("--animate-weight-to", selects[1].value);
+        preview.style.setProperty("--animate-weight-by", $("by").value);
 
         // The script splits the preview into line spans and writes each
         // line's spacing. Then one frozen clone per stop, so every line
@@ -411,24 +518,28 @@
         const r = calibrate(preview);
         if (!r) return;
         measurements.replaceChildren();
+        onion("every stop", r.weights.length, stop);
+        onion("during the wave", 24, wave);
         const offBy = new Map(); // stop -> per line, px
         r.weights.forEach((w, k) => {
           const c = preview.cloneNode(true);
           c.removeAttribute("id");
           c.className = "probe";
-          c.dataset.label = w;
+          c.dataset.label = Math.round(w);
           measurements.append(c);
-          const spans = [...c.querySelectorAll(`.${LINE}`)];
-          for (const s of spans) {
-            s.style.transition = "none";
-            s.style.setProperty("--animate-weight-progress", k / (r.weights.length - 1));
+          // Freeze every unit at this stop, then read the lines that hold them.
+          const at = k / (r.weights.length - 1);
+          for (const u of c.querySelectorAll(`.${UNIT}`)) {
+            u.style.transition = "none";
+            u.style.setProperty("--animate-weight-progress", at);
           }
+          const spans = [...c.querySelectorAll(`.${LINE}`)];
           offBy.set(w, spans.map((s, i) => s.getBoundingClientRect().width - r.lines[i].target));
         });
 
         // One row per line: how far off its from-weight width it is, at each stop.
         log.innerHTML =
-          `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${w}</th>`).join("")}</tr>` +
+          `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${Math.round(w)}</th>`).join("")}</tr>` +
           r.lines
             .map(
               (line, i) =>
@@ -439,31 +550,33 @@
             .join("");
       }
 
-      sliders.forEach((s, i) =>
-        s.addEventListener("input", () => {
-          fields[i].value = s.value;
-          update();
-        }),
-      );
-      fields.forEach((f, i) =>
-        f.addEventListener("input", () => {
-          sliders[i].value = f.value;
-          update();
-        }),
-      );
-      // Double click on a slider: back to the default, the value attribute in the HTML.
-      sliders.forEach((s, i) =>
-        s.addEventListener("dblclick", () => {
-          s.value = s.defaultValue;
-          fields[i].value = s.defaultValue;
-          update();
-        }),
-      );
+      /** Keep a slider and its number field in step, and run f on every change. */
+      function link(slider, field, f) {
+        slider.addEventListener("input", () => {
+          field.value = slider.value;
+          f();
+        });
+        field.addEventListener("input", () => {
+          slider.value = field.value;
+          f();
+        });
+        // Double click on a slider: back to the default, the value attribute in the HTML.
+        slider.addEventListener("dblclick", () => {
+          slider.value = slider.defaultValue;
+          field.value = slider.defaultValue;
+          f();
+        });
+      }
+
+      sliders.forEach((s, i) => link(s, fields[i], update));
+      link($("delay"), $("delay").nextElementSibling, setDelay);
       selects.forEach((s) => s.addEventListener("change", update));
+      $("by").addEventListener("change", update);
       source.addEventListener("input", update);
       fontUrl.addEventListener("change", loadFont);
       document.fonts.ready.then(() => {
         buildRange(rangeOf(familyOf(fontUrl.value)));
+        setDelay();
         update();
       });
     </script>
