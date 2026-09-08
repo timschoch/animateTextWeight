@@ -1,3 +1,10 @@
 # Lessons
 
 - No Slack is connected to this repo. After a merge, skip the Slack summary step of `git-shortcuts`. Do not ask for a Slack handle.
+- Measure an approximation's error before proposing machinery to avoid it. A worst-case bound derived by hand ("the wave could drift 22px") was 5x the real figure once simulated against measured advances, and the simple version needed none of the timing machinery the bound seemed to demand.
+- Corrections to letter fit belong to the gap between two characters, not to a character. Splitting a correction half before and half after a character moves the first one, because it has no partner on its left.
+- Do not verify an interpolation only at the points it was fitted to. Freezing the tween at its ten stops showed 0.01px everywhere, because a stop is exact by construction; between two stops the same line was 1.95px out. Sweep the whole range.
+- A line that moves is never an acceptable outcome, and neither is a fix that asks the user to keep the weight range, the delay or any other setting small. Holding the line is the whole point of the library, so it is a constraint on the solution, not a thing to trade away. Reaching for JavaScript during the animation is a sign of a wrong model, not a solution: find the simpler one.
+- Holding a box is not the same as holding what is drawn in it. A line measured 0.13px steady while its letters moved 4.7px, because the measurement read layout boxes and the eye reads glyphs. Measure the thing that is looked at.
+- Layout can carry a signal that no custom property can. Every character needs to know how far over its line is right now, which is a sum across all of them and so cannot be a variable. A flex line computes exactly that sum as its free space and hands it out in equal parts. Reach for the layout algorithm before inventing a clock.
+- A font's shape does not change smoothly with weight. It is drawn at a few weights and interpolated between them, so the width curve has a corner at every drawing, usually at a multiple of 100. Sampling has to land on those corners, not straddle them.
