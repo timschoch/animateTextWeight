@@ -17,3 +17,13 @@ Public npm package. Keep changes minimal — no internal-project scaffolding bey
 ## Lessons
 
 Check `lessons.md` at repo root before repeating past mistakes.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context layout: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
