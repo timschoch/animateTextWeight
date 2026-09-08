@@ -1,0 +1,27 @@
+{
+  "name": "animate-text-weight",
+  "version": "0.1.0",
+  "description": "Animate short text between two weights of a variable font without moving a single line.",
+  "license": "MIT",
+  "author": "Tim Schoch",
+  "repository": "github:timschoch/animateTextWeight",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./style.css": "./src/animateTextWeight.css"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

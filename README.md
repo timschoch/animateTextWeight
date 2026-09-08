@@ -15,9 +15,23 @@ pre-rendered, the browser measures at runtime.
 
 ## Use
 
-Set the two weights on the element, then switch it on wherever you like:
+Import the stylesheet and start the script once per page:
+
+```js
+import "animate-text-weight/style.css";
+import { init } from "animate-text-weight";
+init();
+```
+
+Set the end weight on the element, then switch it on wherever you like.
+The element's own `font-weight` is the rest weight:
 
 ```css
-h1 { --animate-weight-from: 200; --animate-weight-to: 700; }
+h1 { font-weight: 200; --animate-weight-to: 700; }
 section:hover h1, section.active h1 { --animate-weight: true; }
 ```
+
+`--animate-weight` inherits, so you can set it on the section instead of
+each heading. `--animate-weight-from` overrides the rest weight when you
+need it. Duration and easing: `--animate-weight-duration` and
+`--animate-weight-easing` on `:root`.
