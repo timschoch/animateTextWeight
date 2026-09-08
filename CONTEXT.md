@@ -5,27 +5,30 @@ A CSS/JS library that tweens text between two variable-font weights while keepin
 ## Language
 
 **Animated element**:
-An element carrying a `to` weight in CSS (`--animate-weight-to`), the unit this library finds and calibrates.
+An element carrying a `to` state in CSS (`--animate-weight-to`), the unit this library finds and calibrates.
 _Avoid_: target, node.
 
-**From weight**:
-The font-weight an animated element rests at and breaks its lines at. Optional in CSS (`--animate-weight-from`); defaults to the element's own `font-weight`.
-_Avoid_: rest weight, default weight, start weight.
+**From**:
+The state an animated element rests in and breaks its lines at, set as a font-weight in CSS (`--animate-weight-from`). Optional; defaults to the element's own `font-weight`.
+_Avoid_: rest state, default state, start state.
 
-**To weight**:
-The font-weight an animated element tweens toward once its switch is on.
-_Avoid_: end weight, animated weight.
+**To**:
+The state an animated element tweens toward once its switch is on, set as a font-weight in CSS (`--animate-weight-to`).
+_Avoid_: end state, animated state.
+
+**Weight**:
+The font-weight number that defines a state, from `1` to `1000` on a variable font's weight axis.
 
 **Line**:
 One rendered (wrapped) line of an animated element's text, frozen into its own `<span>` so it can be measured and given letter-spacing independent of its siblings.
 _Avoid_: segment, row.
 
 **Stop**:
-One of the ten sampled points between the `from` and `to` weight, each holding its own letter-spacing value written as `--atw-ls-<n>`.
+One of the ten sampled points between the `from` and `to` state, each holding its own letter-spacing value written as `--atw-ls-<n>`.
 _Avoid_: step, keyframe.
 
 **Target width**:
-A line's width at the `from` weight — the width every stop's letter-spacing is chosen to match.
+A line's width at the `from` state. Every stop's letter-spacing is chosen to match it.
 
 **Calibration**:
 Splitting an animated element into lines and computing each line's target width and per-stop letter-spacing. Runs on load and again on resize.
