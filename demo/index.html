@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>animateTextWeight sandbox</title>
+    <!-- One variable font for the demo. Any variable font works. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link id="font" href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <!-- The example fonts, so each button can show its own face. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Mozilla+Headline:wght@200..700&family=Playwrite+DE+LA:wght@100..400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../src/animateTextWeight.css" />
+    <style>
+      :root {
+        --label: clamp(100px, 15vw, 200px);
+        --accent: #c8102e;
+        --accent-soft: #f6e8ea;
+        --muted: #6b6b6b;
+        --line: #d9d9d9;
+      }
+      html {
+        font-family: "Outfit", sans-serif;
+        font-weight: 300;
+        font-size: 18px;
+        line-height: 1.5;
+      }
+      body {
+        margin: 0;
+        padding: 40px;
+        color: #1c1c1c;
+      }
+      h1 {
+        margin: 0 0 40px;
+      }
+      h2 {
+        margin: 40px 0 8px;
+      }
+      h3 {
+        margin: 20px 0 8px;
+      }
+      p {
+        margin: 0;
+      }
+      code {
+        font-family: ui-monospace, monospace;
+        font-size: 15px;
+      }
+      .label {
+        color: var(--muted);
+        margin: 32px 0 8px;
+      }
+      /* Same look as the log table: bold label, a rule under each row. */
+      .controls {
+        display: grid;
+        grid-template-columns: var(--label) 1fr;
+        max-width: 1200px;
+      }
+      /* Both cells stretch to the row, so the rules under them line up. */
+      .controls > * {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .controls > label {
+        font-weight: 600;
+      }
+      /* A full row, e.g. the preview. */
+      .controls > .full {
+        grid-column: 1 / -1;
+      }
+      /* Group heading: one full row, no rule under it. */
+      .controls > h3 {
+        grid-column: 1 / -1;
+        margin: 24px 0 0;
+        border-bottom: none;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+      .controls input,
+      .controls select {
+        font-family: helvetica, arial, sans-serif;
+        font-size: 16px;
+        height:auto;
+        padding: 8px 12px;
+        margin-inline: 8px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: #dbebf0;
+      }
+      .controls input[type="range"] {
+        width: 200px;
+        vertical-align: middle;
+      }
+      .controls input[type="number"] {
+        width: 70px;
+      }
+      .controls input[type="url"] {
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: 0;
+      }
+      .source {
+        width: var(--w);
+        max-width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+      }
+      .examples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-block-end: 15px;
+      }
+      .examples button {
+        font: inherit;
+        font-size: 15px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: white;
+        cursor: pointer;
+      }
+      .examples button:hover {
+        border-color: var(--accent);
+      }
+      .examples button[aria-pressed="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+      .hint {
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      a {
+        color: var(--accent);
+      }
+
+      /*
+       * The preview: no script of its own, only the values the script wrote.
+       * Rests at its font-weight, goes to --animate-weight-to on hover.
+       */
+      .sample {
+        width: var(--w);
+        font-size: var(--s);
+        line-height: 1.2;
+        outline: 1px solid var(--accent);
+        background: var(--accent-soft);
+      }
+      .sample:hover {
+        --animate-weight: true;
+      }
+
+      /* Every kept copy, with its label to the right. */
+      .probe {
+        position: relative;
+        width: var(--w);
+        font-size: var(--s);
+        line-height: 1.2;
+        outline: 1px solid var(--accent);
+        background: var(--accent-soft);
+        margin-bottom: 8px;
+      }
+      .probe::after {
+        content: attr(data-label);
+      }
+      .probe::after,
+      .block .tag {
+        position: absolute;
+        left: 100%;
+        top: 0;
+        padding-left: 12px;
+        color: var(--muted);
+        font-size: 18px;
+        font-weight: 300;
+        line-height: 1.5;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      table {
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .num {
+        text-align: right;
+      }
+      /* First column as wide as the control labels. The line text only identifies the row: one line, cut with an ellipsis. */
+      th:first-child,
+      .line {
+        box-sizing: border-box;
+        width: var(--label);
+        max-width: var(--label);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /*
+       * Drift scale, no script: the live line on top is a plain font-weight
+       * transition and shifts; the bare steps below show the drift per weight.
+       */
+      .scale {
+        width: fit-content;
+        background: var(--accent-soft);
+      }
+      .block {
+        position: relative;
+        width: fit-content;
+        border: 1px solid var(--accent);
+        font-size: 60px;
+        line-height: 1.2;
+        font-weight: var(--weight);
+      }
+      .block.live p {
+        font-weight: var(--from);
+        transition: font-weight var(--animate-weight-duration) var(--animate-weight-easing);
+      }
+      .block.live:hover p {
+        font-weight: var(--to);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>animateTextWeight Demo</h1>
+
+    <!-- Controls: label left, control right, 20/80. -->
+    <h2>Controls</h2>
+    <div class="controls">
+      <h3>Animation</h3>
+
+      <label for="font-url">Font</label>
+      <div>
+        <div class="examples" id="examples"></div>
+        <input type="url" id="font-url" value="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" />
+        <p class="hint">
+          A Google Fonts CSS URL. Pick a font at
+          <a href="https://fonts.google.com/?categoryFilters=Technology:%2FTechnology%2FVariable" target="_blank">Google Fonts, variable only</a>,
+          then paste the URL from its embed code.
+        </p>
+      </div>
+
+      <label for="from">Weight</label>
+      <div>From <select id="from"></select> to <select id="to"></select></div>
+
+      <label for="size">Size</label>
+      <div><input type="range" id="size" min="12" max="200" step="4" value="60" /> <input type="number" value="60" /> px</div>
+
+      <div class="full">
+        <div class="sample" id="preview"></div>
+        <div class="label">(hover to see animation)</div>
+      </div>
+
+      <h3>Other settings</h3>
+
+      <label for="source">Text</label>
+      <div><div class="source" id="source" contenteditable="true">WORKSHOP<br />Rapid Prototyping Week</div></div>
+
+      <label for="spacing">Spacing</label>
+      <div><input type="range" id="spacing" min="-5" max="10" step="0.1" value="0" /> <input type="number" step="0.1" value="0" /> px<br>
+        <span class="label">the spacing you want the default state to have, appliedin your css file</span>
+      </div>
+
+      <label for="width">Container width</label>
+      <div><input type="range" id="width" min="300" max="1200" step="50" value="800" /> <input type="number" value="800" /> px</div>
+    </div>
+
+    
+    <h2>Measurements</h2>
+    <div id="measurements"></div>
+    <div class="label"><b>Difference in px</b> to the default width, per line and weight</div>
+    <table id="log"></table>
+
+    <h2>Without corrections</h2>
+    <div class="label">The bare font, <span id="scale-range"></span> at 60px: this is the shifting the script cancels</div>
+    <div class="scale" id="scale"></div>
+
+    <script type="module">
+      // Run `npm run build` first: the page imports the built script.
+      import { calibrate, LINE } from "../dist/index.js";
+
+      const $ = (id) => document.getElementById(id);
+      const source = $("source");
+      const preview = $("preview");
+      const measurements = $("measurements");
+      const log = $("log");
+      const sliders = ["width", "size", "spacing"].map($);
+      const fields = sliders.map((s) => s.nextElementSibling);
+      const selects = ["from", "to"].map($);
+      const fontUrl = $("font-url");
+
+      /** Family name from a Google Fonts CSS URL: family=Lora:ital,wght@... -> Lora. */
+      const familyOf = (url) => new URL(url).searchParams.get("family")?.split(":")[0] ?? "";
+
+      // Example fonts, one button each: the family spec of a Google Fonts URL.
+      const examples = [
+        "Outfit:wght@100..900",
+        "Aleo:ital,wght@0,100..900;1,100..900",
+        "Lora:ital,wght@0,400..700;1,400..700",
+        "Montserrat:ital,wght@0,100..900;1,100..900",
+        "Mozilla+Headline:wght@200..700",
+        "Playwrite+DE+LA:wght@100..400",
+      ];
+      /** One button per font URL, shown in its own face. A custom URL goes in front. */
+      function addButton(url, front = false) {
+        const name = familyOf(url);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.url = url;
+        button.textContent = name;
+        button.style.fontFamily = `"${name}", sans-serif`;
+        button.addEventListener("click", () => {
+          fontUrl.value = url;
+          loadFont();
+        });
+        $("examples")[front ? "prepend" : "append"](button);
+        return button;
+      }
+      /** Mark the button of the loaded URL; make one first if none has it. */
+      function selectButton(url) {
+        const buttons = [...$("examples").querySelectorAll("button")];
+        const own = buttons.find((b) => b.dataset.url === url) ?? addButton(url, true);
+        for (const b of buttons) b.setAttribute("aria-pressed", "false");
+        own.setAttribute("aria-pressed", "true");
+      }
+      for (const spec of examples) addButton(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
+      selectButton(fontUrl.value);
+
+      /*
+       * Weight range from the loaded faces, not the URL. Each face carries
+       * its weight descriptor: "100 900" for a variable font, "400" for a
+       * static one. The widest span over all faces of the family wins.
+       */
+      function rangeOf(family) {
+        let min = Infinity;
+        let max = -Infinity;
+        for (const face of document.fonts) {
+          if (face.family.replaceAll('"', "") !== family) continue;
+          const [lo, hi = lo] = face.weight.split(" ").map(Number);
+          min = Math.min(min, lo);
+          max = Math.max(max, hi);
+        }
+        return min === Infinity ? { min: 400, max: 400 } : { min, max };
+      }
+
+      /** The from and to lists and the drift scale, for one weight range. */
+      function buildRange({ min, max }) {
+        const weights = [];
+        for (let w = Math.ceil(min / 100) * 100; w <= max; w += 100) weights.push(w);
+        if (weights[0] !== min) weights.unshift(min);
+        if (weights.at(-1) !== max) weights.push(max);
+        for (const [i, sel] of selects.entries()) {
+          sel.replaceChildren();
+          for (const w of weights) sel.add(new Option(w, w, false, w === (i ? max : min)));
+        }
+        $("scale-range").textContent = `${min} to ${max}`;
+        const live = document.createElement("div");
+        live.className = "block live";
+        live.style.setProperty("--from", min);
+        live.style.setProperty("--to", max);
+        live.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${min} to ${max}, hover</span>`;
+        $("scale").replaceChildren(live);
+        for (const w of weights) {
+          const block = document.createElement("div");
+          block.className = "block";
+          block.style.setProperty("--weight", w);
+          block.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${w}</span>`;
+          $("scale").append(block);
+        }
+      }
+
+      // Swap the font: new stylesheet, family and range from the URL, then re-measure.
+      function loadFont() {
+        const url = fontUrl.value.trim();
+        const family = familyOf(url);
+        if (!family) return;
+        selectButton(url);
+        const link = $("font");
+        link.onload = () =>
+          document.fonts.ready.then(() => {
+            buildRange(rangeOf(family));
+            update();
+          });
+        link.href = url;
+        document.documentElement.style.fontFamily = `"${family}", sans-serif`;
+      }
+
+      function update() {
+        const [width, size, spacing] = fields.map((f) => Number(f.value));
+        document.documentElement.style.setProperty("--w", `${width}px`);
+        document.documentElement.style.setProperty("--s", `${size}px`);
+        preview.innerText = source.innerText; // innerText keeps a typed line break as <br>
+        preview.style.letterSpacing = `${spacing}px`; // set from outside, like a site would
+        preview.style.fontWeight = selects[0].value;
+        preview.style.setProperty("--animate-weight-to", selects[1].value);
+
+        // The script splits the preview into line spans and writes each
+        // line's spacing. Then one frozen clone per stop, so every line
+        // should end where it ends at rest.
+        const r = calibrate(preview);
+        if (!r) return;
+        measurements.replaceChildren();
+        const offBy = new Map(); // stop -> per line, px
+        r.weights.forEach((w, k) => {
+          const c = preview.cloneNode(true);
+          c.removeAttribute("id");
+          c.className = "probe";
+          c.dataset.label = w;
+          measurements.append(c);
+          const spans = [...c.querySelectorAll(`.${LINE}`)];
+          for (const s of spans) {
+            s.style.transition = "none";
+            s.style.setProperty("--animate-weight-progress", k / (r.weights.length - 1));
+          }
+          offBy.set(w, spans.map((s, i) => s.getBoundingClientRect().width - r.lines[i].target));
+        });
+
+        // One row per line: how far off its width at rest it is, at each stop.
+        log.innerHTML =
+          `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${w}</th>`).join("")}</tr>` +
+          r.lines
+            .map(
+              (line, i) =>
+                `<tr><td class="line" title="${line.text}">${line.text}</td>` +
+                r.weights.map((w) => `<td class="num">${offBy.get(w)[i].toFixed(2)}</td>`).join("") +
+                `</tr>`,
+            )
+            .join("");
+      }
+
+      sliders.forEach((s, i) =>
+        s.addEventListener("input", () => {
+          fields[i].value = s.value;
+          update();
+        }),
+      );
+      fields.forEach((f, i) =>
+        f.addEventListener("input", () => {
+          sliders[i].value = f.value;
+          update();
+        }),
+      );
+      // Double click on a slider: back to the default, the value attribute in the HTML.
+      sliders.forEach((s, i) =>
+        s.addEventListener("dblclick", () => {
+          s.value = s.defaultValue;
+          fields[i].value = s.defaultValue;
+          update();
+        }),
+      );
+      selects.forEach((s) => s.addEventListener("change", update));
+      source.addEventListener("input", update);
+      fontUrl.addEventListener("change", loadFont);
+      document.fonts.ready.then(() => {
+        buildRange(rangeOf(familyOf(fontUrl.value)));
+        update();
+      });
+    </script>
+  </body>
+</html>

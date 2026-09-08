@@ -5,7 +5,7 @@
  * A string's width at a weight depends on its letters, so no table per font
  * can hold every text to the same width, and one spacing per element can
  * hold one line only. So the element is split into its rendered lines, one
- * span per line, and each span gets its own nine --atw-ls-<stop> values.
+ * span per line, and each span gets its own eleven --atw-ls-<stop> values.
  * animateTextWeight.css reads them.
  *
  * The element says what it wants in CSS: --animate-weight-from and
@@ -20,7 +20,7 @@
 /** Class of one rendered line, styled by animateTextWeight.css. */
 export const LINE = "animate-text-weight-line";
 /** Segments between the two weights; the CSS map has SEGMENTS + 1 stops. */
-const SEGMENTS = 8;
+const SEGMENTS = 10;
 
 /** Original child nodes of each split element, so it can be split again. */
 const sources = new WeakMap<HTMLElement, Node[]>();

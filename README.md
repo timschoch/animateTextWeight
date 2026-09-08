@@ -13,6 +13,12 @@ class needed on the elements you want to animate, because the script finds the
 animated elements on its own. That also makes it work with any CMS: nothing is
 pre-rendered, the browser measures at runtime.
 
+## Sandbox
+
+Run `npm run demo` and open `http://localhost:3000/demo/`. Type any text,
+set width, size and the two weights, hover the preview. The table shows how
+far each line lands from its width at rest, per stop.
+
 ## Use
 
 Import the stylesheet and start the script once per page:
