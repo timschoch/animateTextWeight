@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "setup-matt-pocock-skills": {
+      "source": "timschoch/mattpocock-skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "computedHash": "6cac70b76d6c15388f785b5c95dfb33b93bfda0cc8e31862bfb8e732eb610b35"
+    },
     "setup-project": {
       "source": "timschoch/skilly",
       "sourceType": "github",
