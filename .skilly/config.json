@@ -1,0 +1,10 @@
+{
+  "tier": "sandbox",
+  "bundles": [
+    "workflow",
+    "tech-typescript"
+  ],
+  "review": {
+    "bots": []
+  }
+}
