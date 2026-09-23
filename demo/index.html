@@ -1179,7 +1179,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       const measurements = $("measurements");
       const log = $("log");
       const sliders = ["width", "size", "spacing"].map($);
-      const fields = sliders.map((s) => s.nextElementSibling);
+      const fields = sliders.map((slider) => slider.nextElementSibling);
       const selects = ["from", "to"].map($);
       /**
        * The from and to weights last picked by hand, kept apart from the lists.
@@ -1197,13 +1197,13 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        * demo on the page and not only the sandbox. The nav and the headings
        * animate the same way and were the only ones left out of it.
        */
-      const setColor = (...els) => {
+      const setColor = (...elements) => {
         const on = $("color").value === "on";
-        for (const el of els)
+        for (const element of elements)
           for (const end of ["from", "to"]) {
             const name = `--animate-weight-color-${end}`;
-            if (on) el.style.setProperty(name, $(`color-${end}`).value);
-            else el.style.removeProperty(name);
+            if (on) element.style.setProperty(name, $(`color-${end}`).value);
+            else element.style.removeProperty(name);
           }
       };
 
@@ -1237,8 +1237,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       /** Mark the button of the loaded URL; make one first if none has it. */
       function selectButton(url) {
         const buttons = [...$("examples").querySelectorAll("button")];
-        const own = buttons.find((b) => b.dataset.url === url) ?? addButton(url, true);
-        for (const b of buttons) b.setAttribute("aria-pressed", "false");
+        const own = buttons.find((button) => button.dataset.url === url) ?? addButton(url, true);
+        for (const button of buttons) button.setAttribute("aria-pressed", "false");
         own.setAttribute("aria-pressed", "true");
       }
       for (const spec of examples) addButton(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
@@ -1264,17 +1264,17 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       /** The from and to lists and the drift scale, for one weight range. */
       function buildRange({ min, max }) {
         const weights = [];
-        for (let w = Math.ceil(min / 100) * 100; w <= max; w += 100) weights.push(w);
+        for (let weight = Math.ceil(min / 100) * 100; weight <= max; weight += 100) weights.push(weight);
         if (weights[0] !== min) weights.unshift(min);
         if (weights.at(-1) !== max) weights.push(max);
         // What was picked by hand, or the nearest this font has. Both landing on
         // one weight would animate nothing, so then the whole range instead.
-        const nearest = (want) => weights.reduce((a, b) => (Math.abs(b - want) < Math.abs(a - want) ? b : a));
+        const nearest = (want) => weights.reduce((closest, weight) => (Math.abs(weight - want) < Math.abs(closest - want) ? weight : closest));
         let chosen = [nearest(picked[0] ?? min), nearest(picked[1] ?? max)];
         if (chosen[0] === chosen[1]) chosen = [min, max];
-        for (const [i, sel] of selects.entries()) {
+        for (const [index, sel] of selects.entries()) {
           sel.replaceChildren();
-          for (const w of weights) sel.add(new Option(w, w, false, w === chosen[i]));
+          for (const weight of weights) sel.add(new Option(weight, weight, false, weight === chosen[index]));
         }
         $("scale-range").textContent = `${min} to ${max}`;
         const live = document.createElement("div");
@@ -1283,11 +1283,11 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         live.style.setProperty("--to", max);
         live.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${min} to ${max}, hover</span>`;
         $("scale").replaceChildren(live);
-        for (const w of weights) {
+        for (const weight of weights) {
           const block = document.createElement("div");
           block.className = "block";
-          block.style.setProperty("--weight", w);
-          block.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${w}</span>`;
+          block.style.setProperty("--weight", weight);
+          block.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${weight}</span>`;
           $("scale").append(block);
         }
       }
@@ -1317,66 +1317,66 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         // Newton on the x curve, then read y. Eight rounds is plenty at this size.
         const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
         const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-        return (x) => {
-          let t = x;
-          for (let i = 0; i < 8; i++) {
-            const slope = (3 * ax * t + 2 * bx) * t + cx;
+        return (time) => {
+          let parameter = time;
+          for (let round = 0; round < 8; round++) {
+            const slope = (3 * ax * parameter + 2 * bx) * parameter + cx;
             if (Math.abs(slope) < 1e-6) break;
-            t -= (((ax * t + bx) * t + cx) * t - x) / slope;
+            parameter -= (((ax * parameter + bx) * parameter + cx) * parameter - time) / slope;
           }
-          return ((ay * t + by) * t + cy) * t;
+          return ((ay * parameter + by) * parameter + cy) * parameter;
         };
       }
 
       /** Every unit at the same progress: one stop, the way a rest state looks. */
-      function stop(units, k, n) {
-        for (const u of units) u.style.setProperty("--animate-weight-progress", (k / (n - 1)).toFixed(4));
+      function stop(units, index, count) {
+        for (const unit of units) unit.style.setProperty("--animate-weight-progress", (index / (count - 1)).toFixed(4));
       }
 
       /**
-       * One moment of the wave, sample k of n: every unit at its own progress,
+       * One moment of the wave, sample `index` of `count`: every unit at its own progress,
        * worked out from the duration, the delay and the easing, the way the css
        * does it.
        */
-      function wave(units, k, n) {
-        const ms = (v) => parseFloat(v) * (v.trim().endsWith("ms") ? 1 : 1000);
+      function wave(units, index, count) {
+        const ms = (value) => parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000);
         const duration = ms(getComputedStyle(preview).getPropertyValue("--animate-weight-duration"));
         const ease = easing();
         // Each unit's wait as the browser worked it out, read off the live
         // preview: the clones have their transition switched off, and the
         // direction is already in this number.
         const live = [...preview.querySelectorAll(`.${UNIT}`)];
-        const delays = units.map((_, i) => ms(getComputedStyle(live[i]).transitionDelay));
-        const t = ((duration + Math.max(...delays, 0)) * k) / (n - 1);
-        units.forEach((u, i) => {
-          const p = Math.min(Math.max((t - delays[i]) / duration, 0), 1);
-          u.style.setProperty("--animate-weight-progress", ease(p).toFixed(4));
+        const delays = units.map((_, unitIndex) => ms(getComputedStyle(live[unitIndex]).transitionDelay));
+        const elapsed = ((duration + Math.max(...delays, 0)) * index) / (count - 1);
+        units.forEach((unit, unitIndex) => {
+          const progress = Math.min(Math.max((elapsed - delays[unitIndex]) / duration, 0), 1);
+          unit.style.setProperty("--animate-weight-progress", ease(progress).toFixed(4));
         });
       }
 
-      /** n copies of the preview stacked, each frozen by freeze(). */
-      function onion(label, n, freeze) {
+      /** `count` copies of the preview stacked, each frozen by freeze(). */
+      function onion(label, count, freeze) {
         const box = document.createElement("div");
         box.className = "onion";
         box.dataset.label = label;
-        for (let k = 0; k < n; k++) {
-          const c = preview.cloneNode(true);
-          c.removeAttribute("id");
-          const units = [...c.querySelectorAll(`.${UNIT}`)];
-          for (const u of units) u.style.transition = "none";
-          freeze(units, k, n);
-          box.append(c);
+        for (let index = 0; index < count; index++) {
+          const clone = preview.cloneNode(true);
+          clone.removeAttribute("id");
+          const units = [...clone.querySelectorAll(`.${UNIT}`)];
+          for (const unit of units) unit.style.transition = "none";
+          freeze(units, index, count);
+          box.append(clone);
         }
         measurements.append(box);
       }
 
       function update() {
-        const [width, size, spacing] = fields.map((f) => Number(f.value));
+        const [width, size, spacing] = fields.map((field) => Number(field.value));
         document.documentElement.style.setProperty("--w", `${width}px`);
         document.documentElement.style.setProperty("--s", `${size}px`);
         // Caps change every width, so everything animated measures again.
         document.documentElement.style.setProperty("--case", $("case").value);
-        for (const el of document.querySelectorAll("h1, .about-links a")) calibrate(el);
+        for (const element of document.querySelectorAll("h1, .about-links a")) calibrate(element);
         preview.innerText = source.innerText; // innerText keeps a typed line break as <br>
         preview.style.letterSpacing = `${spacing}px`; // set from outside, like a site would
         preview.style.fontWeight = selects[0].value;
@@ -1391,56 +1391,56 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         // The script splits the preview into line spans and writes each
         // line's spacing. Then one frozen clone per stop, so every line
         // should end where it ends at the from weight.
-        const r = calibrate(preview);
-        if (!r) return;
+        const calibration = calibrate(preview);
+        if (!calibration) return;
         measurements.replaceChildren();
-        onion("every stop", r.weights.length, stop);
+        onion("every stop", calibration.weights.length, stop);
         onion("during the wave", 24, wave);
         const offBy = new Map(); // stop -> per line, px
-        r.weights.forEach((w, k) => {
-          const c = preview.cloneNode(true);
-          c.removeAttribute("id");
-          c.className = "probe";
-          c.dataset.label = Math.round(w);
-          measurements.append(c);
+        calibration.weights.forEach((weight, index) => {
+          const probe = preview.cloneNode(true);
+          probe.removeAttribute("id");
+          probe.className = "probe";
+          probe.dataset.label = Math.round(weight);
+          measurements.append(probe);
           // Freeze every unit at this stop, then read the lines that hold them.
-          const at = k / (r.weights.length - 1);
-          for (const u of c.querySelectorAll(`.${UNIT}`)) {
-            u.style.transition = "none";
-            u.style.setProperty("--animate-weight-progress", at);
+          const at = index / (calibration.weights.length - 1);
+          for (const unit of probe.querySelectorAll(`.${UNIT}`)) {
+            unit.style.transition = "none";
+            unit.style.setProperty("--animate-weight-progress", at);
           }
-          const spans = [...c.querySelectorAll(`.${LINE}`)];
-          offBy.set(w, spans.map((s, i) => s.getBoundingClientRect().width - r.lines[i].target));
+          const spans = [...probe.querySelectorAll(`.${LINE}`)];
+          offBy.set(weight, spans.map((span, lineIndex) => span.getBoundingClientRect().width - calibration.lines[lineIndex].target));
         });
 
         // One row per line: how far off its from-weight width it is, at each stop.
         log.innerHTML =
-          `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${Math.round(w)}</th>`).join("")}</tr>` +
-          r.lines
+          `<tr><th>line</th>${calibration.weights.map((weight) => `<th class="num">${Math.round(weight)}</th>`).join("")}</tr>` +
+          calibration.lines
             .map(
-              (line, i) =>
+              (line, index) =>
                 `<tr><td class="line" title="${line.text}">${line.text}</td>` +
-                r.weights.map((w) => `<td class="num">${offBy.get(w)[i].toFixed(2)}</td>`).join("") +
+                calibration.weights.map((weight) => `<td class="num">${offBy.get(weight)[index].toFixed(2)}</td>`).join("") +
                 `</tr>`,
             )
             .join("");
       }
 
-      /** Keep a slider and its number field in step, and run f on every change. */
-      function link(slider, field, f) {
+      /** Keep a slider and its number field in step, and run onChange on every change. */
+      function link(slider, field, onChange) {
         slider.addEventListener("input", () => {
           field.value = slider.value;
-          f();
+          onChange();
         });
         field.addEventListener("input", () => {
           slider.value = field.value;
-          f();
+          onChange();
         });
         // Double click on a slider: back to the default, the value attribute in the HTML.
         slider.addEventListener("dblclick", () => {
           slider.value = slider.defaultValue;
           field.value = slider.defaultValue;
-          f();
+          onChange();
         });
       }
 
@@ -1448,7 +1448,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       const traceRows = $("trace-rows");
       // A question mark, not NaN: a reading that could not be taken is worth
       // telling apart from a reading that disagrees.
-      const pad = (v) => (Number.isFinite(v) ? String(Math.round(v)) : "?").padStart(4);
+      const pad = (value) => (Number.isFinite(value) ? String(Math.round(value)) : "?").padStart(4);
       /** How long after a crossing the wave is read. */
       const LOOK = 80;
       /*
@@ -1457,8 +1457,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        * numbers whichever way round it runs, so only which one comes first says
        * anything. Falling is a wave from the start, rising one from the end.
        */
-      const part = (n) => (Number.isFinite(n) ? n.toFixed(2) : "?").padStart(5);
-      const parts = (v) => `${part(v[0])}..${part(v.at(-1))}`;
+      const part = (value) => (Number.isFinite(value) ? value.toFixed(2) : "?").padStart(5);
+      const parts = (values) => `${part(values[0])}..${part(values.at(-1))}`;
       // How each column looks, taken off its heading rather than said twice:
       // the heading is where a column is named, so let it be where a column is
       // sized and aligned too. Every cell wears its heading's classes.
@@ -1494,9 +1494,9 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // The end one of an element's waves points at, the way the library writes
       // it. The flip is inverted while the pair is running back down, so
       // --atw-way has to be read with it to get back to an end.
-      const endOf = (el, wave) => {
-        const flip = el.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
-        const down = el.style.getPropertyValue("--atw-way") === "-1";
+      const endOf = (element, wave) => {
+        const flip = element.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
+        const down = element.style.getPropertyValue("--atw-way") === "-1";
         return (flip === "1") !== down ? "end" : "start";
       };
 
@@ -1504,8 +1504,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // library will move the end it counts from. Read on the crossing itself:
       // the library's own listener has run by then, but retargeting a
       // transition does not move the value it is showing.
-      const freeNow = (el, wave) =>
-        [...el.querySelectorAll(`.${LINE}`)].every((line) => {
+      const freeNow = (element, wave) =>
+        [...element.querySelectorAll(`.${LINE}`)].every((line) => {
           const at = Number(getComputedStyle(line).getPropertyValue(`--atw-wave-${wave}`));
           return at < 0.02 || at > 0.98;
         });
@@ -1538,10 +1538,10 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       });
       addEventListener(
         "pointermove",
-        (e) => {
+        (event) => {
           if (cursorBox.hidden) return;
-          cursorBox.style.left = `${e.clientX}px`;
-          cursorBox.style.top = `${e.clientY}px`;
+          cursorBox.style.left = `${event.clientX}px`;
+          cursorBox.style.top = `${event.clientY}px`;
         },
         { passive: true },
       );
@@ -1586,15 +1586,15 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
           ...(free ? says(TRACE_AIM, cells["wave from"] === aimFor(cells)) : {}),
           ...says(TRACE_RUN, ran === ranFrom(cells)),
         };
-        const mark = (name, i) => [traceLooks[i], verdict[name] ?? ""].join(" ").trim();
+        const mark = (name, index) => [traceLooks[index], verdict[name] ?? ""].join(" ").trim();
 
         const row = document.createElement("tr");
-        Object.entries(cells).forEach(([name, cell], i) => {
+        Object.entries(cells).forEach(([name, cell], index) => {
           const td = document.createElement("td");
           td.textContent = cell;
           // The one column that is cut, so it keeps the whole name to hover.
-          if (i === 0) td.title = cell;
-          td.className = mark(name, i);
+          if (index === 0) td.title = cell;
+          td.className = mark(name, index);
           row.append(td);
         });
         traceRows.prepend(row);
@@ -1603,12 +1603,12 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         // The same cells again, one name and one value per line, for the box
         // that rides along with the pointer.
         cursorBox.replaceChildren(
-          ...Object.entries(cells).flatMap(([name, v], i) => {
+          ...Object.entries(cells).flatMap(([name, value], index) => {
             const dt = document.createElement("dt");
             dt.textContent = name;
             const dd = document.createElement("dd");
-            dd.textContent = String(v).trim();
-            dd.className = mark(name, i);
+            dd.textContent = String(value).trim();
+            dd.className = mark(name, index);
             return [dt, dd];
           }),
         );
@@ -1627,42 +1627,42 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        * Reading the page inside it would work out the waiting :hover on the
        * spot, which is the very thing the library must never need.
        */
-      function traceCrossings(el, name) {
+      function traceCrossings(element, name) {
         for (const type of ["pointerenter", "pointerleave"]) {
-          el.addEventListener(type, (e) => {
+          element.addEventListener(type, (event) => {
             // pageX, never offsetX: offsetX lays the page out, which is the
             // very thing the handler under test must not do.
-            const x = Math.round(e.pageX);
+            const pageX = Math.round(event.pageX);
             // The moment the crossing happened, not the moment it was read a
             // tick later, and the event carries it already.
-            const at = new Date(performance.timeOrigin + e.timeStamp).toISOString();
+            const at = new Date(performance.timeOrigin + event.timeStamp).toISOString();
             // Each crossing aims one wave: coming in the leading one, going
             // out the trailing one. Whether that wave was free to be aimed can
             // only be seen now, before it has moved on.
             const wave = type === "pointerenter" ? "in" : "out";
-            const free = freeNow(el, wave);
+            const free = freeNow(element, wave);
             // Far enough into the wave that its leading end has moved and its
             // trailing end has not, which is the whole reading. On the tick
             // itself both ends still read the same and say nothing.
             setTimeout(() => {
-              const box = el.getBoundingClientRect();
+              const box = element.getBoundingClientRect();
               const mid = box.left + scrollX + box.width / 2;
-              const units = [...el.querySelectorAll(`.${UNIT}`)];
-              const run = units.map((n) =>
-                Number(getComputedStyle(n).getPropertyValue("--animate-weight-progress")),
+              const units = [...element.querySelectorAll(`.${UNIT}`)];
+              const run = units.map((unit) =>
+                Number(getComputedStyle(unit).getPropertyValue("--animate-weight-progress")),
               );
               // One moment for both: the end goes in on the crossing itself
               // now, so there is nothing left to wait for. Waiting would also
               // read --atw-way after the band turned the pair round, which
               // reports every end the wrong way about.
-              const ran = endOf(el, wave);
+              const ran = endOf(element, wave);
               traceRow(
                 {
                   element: name,
                   io: wave,
-                  side: x < mid ? "left" : "right",
+                  side: pageX < mid ? "left" : "right",
                   "wave from": ran,
-                  x: pad(x),
+                  x: pad(pageX),
                   mid: pad(mid),
                   progress: parts(run),
                 },
@@ -1688,26 +1688,26 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       const sandboxLinks = [...document.querySelectorAll(".sandbox-links a")];
 
       function buildPage() {
-        const [, size] = fields.map((f) => Number(f.value));
-        for (const [els, heading] of [
+        const [, size] = fields.map((field) => Number(field.value));
+        for (const [elements, heading] of [
           [navLinks, false],
           [stops, true],
           [sandboxLinks, true],
         ]) {
-          for (const el of els) {
-            el.style.fontWeight = selects[0].value;
-            el.style.setProperty("--animate-weight-to", selects[1].value);
-            el.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
-            el.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
-            setColor(el);
+          for (const element of elements) {
+            element.style.fontWeight = selects[0].value;
+            element.style.setProperty("--animate-weight-to", selects[1].value);
+            element.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
+            element.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
+            setColor(element);
             // The nav keeps its own size and stays a nav: by character, and
             // following both, so hover it and the pointer has the say, scroll
             // under it and the page does.
-            el.style.setProperty("--animate-weight-by", heading ? $("by").value : "character");
-            el.style.setProperty("--animate-weight-direction", heading ? $("direction").value : "pointer scroll");
+            element.style.setProperty("--animate-weight-by", heading ? $("by").value : "character");
+            element.style.setProperty("--animate-weight-direction", heading ? $("direction").value : "pointer scroll");
             // The sandbox's button and link keep their own size.
-            if (els === stops) el.style.fontSize = `${size}px`;
-            calibrate(el);
+            if (elements === stops) element.style.fontSize = `${size}px`;
+            calibrate(element);
           }
         }
       }
@@ -1722,7 +1722,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // The nav crossings go into the same read-out. A link is the short case
       // the eye can check against the numbers: a handful of letters, one line,
       // and a middle a pointer crosses on purpose.
-      for (const a of navLinks) traceCrossings(a, a.textContent.trim());
+      for (const navLink of navLinks) traceCrossings(navLink, navLink.textContent.trim());
 
       /*
        * The jumps, scrolled by hand at a pace that can be watched.
@@ -1734,11 +1734,11 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        */
       const SCROLL_SPEED = 2.5; // px per millisecond
 
-      document.addEventListener("click", (e) => {
-        const link = e.target.closest?.('a[href^="#"]');
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest?.('a[href^="#"]');
         const to = link && document.getElementById(link.hash.slice(1));
         if (!to) return;
-        e.preventDefault();
+        event.preventDefault();
         const from = scrollY;
         // Its own scroll-margin-top, so a target under the sticky nav stops
         // clear of it, the way the browser's own jump would.
@@ -1747,27 +1747,27 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         const ms = Math.min(2500, Math.max(400, Math.abs(by) / SCROLL_SPEED));
         const began = performance.now();
         const step = (now) => {
-          const t = Math.min(1, (now - began) / ms);
+          const progress = Math.min(1, (now - began) / ms);
           // Slow at both ends, so neither the start nor the stop is a jolt.
-          scrollTo(0, from + by * (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) ** 2));
-          if (t < 1) requestAnimationFrame(step);
+          scrollTo(0, from + by * (progress < 0.5 ? 2 * progress * progress : 1 - 2 * (1 - progress) ** 2));
+          if (progress < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
       });
 
-      sliders.forEach((s, i) => link(s, fields[i], update));
+      sliders.forEach((slider, index) => link(slider, fields[index], update));
       // The example's column takes the new width only when the slider is let
       // go, so the controls beside it do not jump on every step of a drag.
       const fitColumn = () => document.documentElement.style.setProperty("--w-col", `${fields[0].value}px`);
-      for (const el of [sliders[0], fields[0]]) el.addEventListener("change", fitColumn);
+      for (const element of [sliders[0], fields[0]]) element.addEventListener("change", fitColumn);
       sliders[0].addEventListener("dblclick", fitColumn);
       fitColumn();
       // The tween needs no new measurement for these, but the frozen wave
       // below it is drawn from them and has to be drawn again.
       for (const id of ["delay", "duration"]) link($(id), $(id).nextElementSibling, update);
-      selects.forEach((s, i) =>
-        s.addEventListener("change", () => {
-          picked[i] = Number(s.value);
+      selects.forEach((select, index) =>
+        select.addEventListener("change", () => {
+          picked[index] = Number(select.value);
           update();
         }),
       );
