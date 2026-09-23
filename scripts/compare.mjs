@@ -9,15 +9,15 @@ import puppeteer from "puppeteer-core";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
 
-const server = http.createServer(async (req, res) => {
+const server = http.createServer(async (request, response) => {
   try {
-    const path = join(root, decodeURIComponent(new URL(req.url, "http://x").pathname));
+    const path = join(root, decodeURIComponent(new URL(request.url, "http://x").pathname));
     const body = await readFile(path);
-    res.writeHead(200, { "content-type": types[extname(path)] ?? "application/octet-stream" });
-    res.end(body);
+    response.writeHead(200, { "content-type": types[extname(path)] ?? "application/octet-stream" });
+    response.end(body);
   } catch {
-    res.writeHead(404);
-    res.end();
+    response.writeHead(404);
+    response.end();
   }
 });
 await new Promise((resolve) => server.listen(0, resolve));

@@ -48,14 +48,14 @@ export const target = (way: Way): End => (way === "-1" ? "0" : "1");
  * the half that is needed means guessing which half that is, and a guess that
  * misses writes a value already in place, which does nothing at all.
  */
-export const entered = (w: Waves): Waves => ({
-  ...w,
-  in: target(w.way),
-  out: other(target(w.way)),
+export const entered = (waves: Waves): Waves => ({
+  ...waves,
+  in: target(waves.way),
+  out: other(target(waves.way)),
 });
 
 /** A pointer leaving: the trailing wave after the leading one, to the same end. */
-export const left = (w: Waves): Waves => ({ ...w, out: w.in });
+export const left = (waves: Waves): Waves => ({ ...waves, out: waves.in });
 
 /**
  * The pair turned round, ready for the next visit.
@@ -65,9 +65,9 @@ export const left = (w: Waves): Waves => ({ ...w, out: w.in });
  * on the text holds them at opposite ends, and turning the pair round under
  * that would let go of all of it at once.
  */
-export const settled = (w: Waves): Waves =>
-  w.in === w.out ? { ...w, way: w.in === "1" ? "-1" : "1" } : w;
+export const settled = (waves: Waves): Waves =>
+  waves.in === waves.out ? { ...waves, way: waves.in === "1" ? "-1" : "1" } : waves;
 
 /** What the text weighs once both waves have arrived: 1 all of it, 0 none. */
-export const weight = (w: Waves): number =>
-  (Number(w.in) - Number(w.out)) * Number(w.way);
+export const weight = (waves: Waves): number =>
+  (Number(waves.in) - Number(waves.out)) * Number(waves.way);

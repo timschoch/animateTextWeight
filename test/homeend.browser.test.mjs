@@ -32,12 +32,12 @@ const settle = (page) =>
         let last = "";
         let still = 0;
         const frame = () => {
-          const active = [...document.querySelectorAll(".page-section.active")].map((el) => el.id);
-          const across = [...document.querySelectorAll(".page-section")].filter((s) => {
-            const box = s.getBoundingClientRect();
+          const active = [...document.querySelectorAll(".page-section.active")].map((element) => element.id);
+          const across = [...document.querySelectorAll(".page-section")].filter((section) => {
+            const box = section.getBoundingClientRect();
             return box.top <= middle && box.bottom > middle;
           });
-          const arrived = `${active}` === `${across.map((s) => s.id)}`;
+          const arrived = `${active}` === `${across.map((section) => section.id)}`;
           const now = `${scrollY} ${active}`;
           if (now !== last) [last, still] = [now, 0];
           else if ((arrived && ++still > 10) || performance.now() > until) return done();
@@ -53,21 +53,21 @@ const read = (page) =>
     const middle = innerHeight / 2;
     const sections = [...document.querySelectorAll(".page-section")];
     // The switch as the tween reads it: the computed value, whatever set it.
-    const on = (el) => el && getComputedStyle(el).getPropertyValue("--animate-weight").trim() === "true";
-    const lit = (els) => els.filter(on).length;
-    const ids = (els) => els.map((el) => el.id);
-    const across = sections.filter((s) => {
-      const box = s.getBoundingClientRect();
+    const isOn = (element) => element && getComputedStyle(element).getPropertyValue("--animate-weight").trim() === "true";
+    const lit = (elements) => elements.filter(isOn).length;
+    const ids = (elements) => elements.map((element) => element.id);
+    const across = sections.filter((section) => {
+      const box = section.getBoundingClientRect();
       return box.top <= middle && box.bottom > middle;
     });
     return {
       expected: { active: ids(across), links: across.length, headings: across.length },
       actual: {
-        active: ids(sections.filter((s) => s.classList.contains("active"))),
+        active: ids(sections.filter((section) => section.classList.contains("active"))),
         links: lit([...document.querySelectorAll(".page-nav a")]),
         headings: lit([...document.querySelectorAll(".page-section > h3")]),
       },
-      linked: across.every((s) => on(document.querySelector(`.page-nav a[href="#${s.id}"]`))),
+      linked: across.every((section) => isOn(document.querySelector(`.page-nav a[href="#${section.id}"]`))),
     };
   });
 
@@ -78,11 +78,11 @@ const marks = (page) => page.evaluate(() => window.marks.splice(0));
 function walk(ids, from, to) {
   const way = Math.sign(to - from);
   const out = [];
-  for (let i = from; i !== to; i += way) out.push(`${ids[i]} off`, `${ids[i + way]} on`);
+  for (let index = from; index !== to; index += way) out.push(`${ids[index]} off`, `${ids[index + way]} on`);
   return out;
 }
 
-async function check(page, label, id) {
+async function validate(page, label, id) {
   await settle(page);
   const { expected, actual, linked } = await read(page);
   if (id) assert.deepEqual(expected.active, [id], `${label}: expected ${id} across the middle`);
@@ -90,10 +90,10 @@ async function check(page, label, id) {
   assert.ok(linked, `${label}: the active section's own link is the lit one`);
 }
 
-test("only the section across the middle stays marked through Home, End and anchor jumps", async (t) => {
+test("only the section across the middle stays marked through Home, End and anchor jumps", async (context) => {
   const server = await serve();
   const browser = await puppeteer.launch({ channel: "chrome", headless: true });
-  t.after(async () => {
+  context.after(async () => {
     await browser.close();
     server.close();
   });
@@ -102,7 +102,7 @@ test("only the section across the middle stays marked through Home, End and anch
   await page.setViewport({ width: 1400, height: 900 });
   await page.goto(`${server.url}/demo/index.html`);
   await page.waitForSelector("#sec-about.active");
-  await check(page, "load", "sec-about");
+  await validate(page, "load", "sec-about");
   const ids = await page.evaluate(() => {
     window.marks = [];
     const sections = [...document.querySelectorAll(".page-section")];
@@ -111,21 +111,21 @@ test("only the section across the middle stays marked through Home, End and anch
       for (const { target, oldValue } of records)
         window.marks.push(`${target.id} ${/\bactive\b/.test(oldValue) ? "off" : "on"}`);
     });
-    for (const s of sections) heard.observe(s, { attributeFilter: ["class"], attributeOldValue: true });
-    return sections.map((s) => s.id);
+    for (const section of sections) heard.observe(section, { attributeFilter: ["class"], attributeOldValue: true });
+    return sections.map((section) => section.id);
   });
   await page.emulateCPUThrottling(4);
 
-  for (let i = 0; i < ROUNDS; i++) {
+  for (let round = 0; round < ROUNDS; round++) {
     await page.keyboard.press("End");
-    await check(page, `round ${i} End`, ids.at(-1));
-    assert.deepEqual(await marks(page), walk(ids, 0, ids.length - 1), `round ${i} End: sections passed`);
+    await validate(page, `round ${round} End`, ids.at(-1));
+    assert.deepEqual(await marks(page), walk(ids, 0, ids.length - 1), `round ${round} End: sections passed`);
     await page.keyboard.press("Home");
-    await check(page, `round ${i} Home`, "sec-about");
-    assert.deepEqual(await marks(page), walk(ids, ids.length - 1, 0), `round ${i} Home: sections passed`);
+    await validate(page, `round ${round} Home`, "sec-about");
+    assert.deepEqual(await marks(page), walk(ids, ids.length - 1, 0), `round ${round} Home: sections passed`);
   }
   for (const hash of ["#sec-thanks", "#sec-use"]) {
     await page.click(`.page-nav a[href="${hash}"]`);
-    await check(page, hash);
+    await validate(page, hash);
   }
 });

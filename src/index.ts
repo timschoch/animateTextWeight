@@ -89,8 +89,8 @@ export interface Report {
  * The weight range set in CSS, or null when the element does not animate.
  * --animate-weight-from is optional: the element's font-weight is the from weight.
  */
-export function range(el: Element): { from: number; to: number; by: Mode } | null {
-  const cs = getComputedStyle(el);
+export function range(element: Element): { from: number; to: number; by: Mode } | null {
+  const cs = getComputedStyle(element);
   const from = Number(cs.getPropertyValue("--animate-weight-from")) || Number(cs.fontWeight);
   const to = Number(cs.getPropertyValue("--animate-weight-to"));
   if (!from || !to || from === to) return null;
@@ -101,42 +101,42 @@ export function range(el: Element): { from: number; to: number; by: Mode } | nul
 /** Elements under root that carry a weight range and hold text directly. */
 export function findAll(root: ParentNode = document): HTMLElement[] {
   const out: HTMLElement[] = [];
-  for (const el of root.querySelectorAll<HTMLElement>("*")) {
-    if (el.classList.contains(LINE)) continue;
-    const hasText = [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && /\S/.test(n.textContent ?? ""));
-    if (hasText && range(el)) out.push(el);
+  for (const element of root.querySelectorAll<HTMLElement>("*")) {
+    if (element.classList.contains(LINE)) continue;
+    const hasText = [...element.childNodes].some((child) => child.nodeType === Node.TEXT_NODE && /\S/.test(child.textContent ?? ""));
+    if (hasText && range(element)) out.push(element);
   }
   return out;
 }
 
 /** Words of the live element grouped by rendered line. */
-export function readLines(el: HTMLElement): string[] {
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+export function readLines(element: HTMLElement): string[] {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
   const lines: { top: number; words: string[] }[] = [];
   const rangeOf = document.createRange();
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = node.textContent ?? "";
     const re = /\S+/g;
-    for (let m = re.exec(text); m; m = re.exec(text)) {
-      rangeOf.setStart(node, m.index);
-      rangeOf.setEnd(node, m.index + m[0].length);
+    for (let word = re.exec(text); word; word = re.exec(text)) {
+      rangeOf.setStart(node, word.index);
+      rangeOf.setEnd(node, word.index + word[0].length);
       const rect = rangeOf.getBoundingClientRect();
-      const line = lines.find((l) => Math.abs(l.top - rect.top) < 1);
-      if (line) line.words.push(m[0]);
-      else lines.push({ top: rect.top, words: [m[0]] });
+      const line = lines.find((candidate) => Math.abs(candidate.top - rect.top) < 1);
+      if (line) line.words.push(word[0]);
+      else lines.push({ top: rect.top, words: [word[0]] });
     }
   }
-  return lines.sort((a, b) => a.top - b.top).map((l) => l.words.join(" "));
+  return lines.sort((above, below) => above.top - below.top).map((line) => line.words.join(" "));
 }
 
 /**
  * Put the original content back, so lines can be read afresh. Content that
  * is not split any more was replaced from outside: that is the new source.
  */
-function restore(el: HTMLElement): void {
-  const source = sources.get(el);
-  if (source && el.querySelector(`.${LINE}`)) el.replaceChildren(...source.map((n) => n.cloneNode(true)));
-  else sources.set(el, [...el.childNodes].map((n) => n.cloneNode(true)));
+function restore(element: HTMLElement): void {
+  const source = sources.get(element);
+  if (source && element.querySelector(`.${LINE}`)) element.replaceChildren(...source.map((child) => child.cloneNode(true)));
+  else sources.set(element, [...element.childNodes].map((child) => child.cloneNode(true)));
 }
 
 /**
@@ -145,7 +145,7 @@ function restore(el: HTMLElement): void {
  * Three decimals. More makes Firefox shimmer, fewer leaves 0.04px gaps.
  */
 function values(span: HTMLElement, name: string, list: number[]): void {
-  list.forEach((v, k) => span.style.setProperty(`--atw-${name}-${k}`, `${v.toFixed(3)}px`));
+  list.forEach((value, stop) => span.style.setProperty(`--atw-${name}-${stop}`, `${value.toFixed(3)}px`));
 }
 
 /** Switch a span on: the weights it moves between, and its place in the wave. */
@@ -160,7 +160,7 @@ function unit(span: HTMLElement, from: number, to: number, delayCount: number): 
 function graphemes(text: string): string[] | null {
   if (typeof Intl.Segmenter !== "function") return null;
   const parts = new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text);
-  return [...parts].map((p) => p.segment);
+  return [...parts].map((part) => part.segment);
 }
 
 /**
@@ -221,7 +221,7 @@ function slots(span: HTMLElement, rest: number, width: number): number {
 function fit(advances: number[][], target: number): { boxes: number[][]; widths: number[] } {
   // At least one unit: splitChars returns early on a line that has none.
   const count = advances.length;
-  const widths = (advances[0] ?? []).map((_, k) => advances.reduce((sum, a) => sum + (a[k] ?? 0), 0));
+  const widths = (advances[0] ?? []).map((_, stop) => advances.reduce((sum, own) => sum + (own[stop] ?? 0), 0));
   const widest = advances.reduce((sum, own) => sum + Math.max(...own), 0);
   const reserve = Math.max(widest - target, 0) / count;
   return { boxes: advances.map((own) => own.map((advance) => advance - reserve)), widths };
@@ -269,41 +269,41 @@ function splitChars(
   // counts as no advance is measured against that. The grouping is decided at
   // the from state and holds for every stop.
   const units: { text: string; start: number; parts: number }[] = [];
-  (perStop[0] ?? []).forEach((advance, i) => {
+  (perStop[0] ?? []).forEach((advance, index) => {
     const open = units.at(-1);
     if (open && advance - base < 0.01) {
-      open.text += parts[i] ?? "";
+      open.text += parts[index] ?? "";
       open.parts += 1;
-    } else units.push({ text: parts[i] ?? "", start: i, parts: 1 });
+    } else units.push({ text: parts[index] ?? "", start: index, parts: 1 });
   });
   if (!units.length) return null;
 
   // A unit's advance is its graphemes', added up.
   const kerned = units.map((unit) =>
-    perStop.map((row) => row.slice(unit.start, unit.start + unit.parts).reduce((sum, a) => sum + a, 0)),
+    perStop.map((row) => row.slice(unit.start, unit.start + unit.parts).reduce((sum, advance) => sum + advance, 0)),
   );
 
   const { boxes, widths } = fit(kerned, target);
 
   let count = -1;
-  const made = units.map((u, i) => {
+  const made = units.map((group, index) => {
     const span = document.createElement("span");
     span.className = CHAR;
-    span.textContent = u.text;
+    span.textContent = group.text;
     // A space keeps the count of the letter before it, so the wave holds its
     // beat across a word gap instead of stalling on something invisible.
-    const delayCount = /\S/.test(u.text) ? ++count : Math.max(count, 0);
-    values(span, "w", boxes[i] ?? []);
+    const delayCount = /\S/.test(group.text) ? ++count : Math.max(count, 0);
+    values(span, "w", boxes[index] ?? []);
     unit(span, from, to, delayCount);
-    return { span, out: { text: u.text, target: kerned[i]?.[0] ?? 0, boxes: boxes[i] ?? [], delayCount } };
+    return { span, out: { text: group.text, target: kerned[index]?.[0] ?? 0, boxes: boxes[index] ?? [], delayCount } };
   });
 
   // The width the line is held at, and the only thing that decides it.
   line.style.setProperty("--atw-width", `${target.toFixed(3)}px`);
   // The far end of this line's wave, for a direction that counts from there.
-  line.style.setProperty("--atw-delay-total", String(Math.max(...made.map((m) => m.out.delayCount))));
-  line.replaceChildren(...made.map((m) => m.span));
-  return { units: made.map((m) => m.out), widths };
+  line.style.setProperty("--atw-delay-total", String(Math.max(...made.map((piece) => piece.out.delayCount))));
+  line.replaceChildren(...made.map((piece) => piece.span));
+  return { units: made.map((piece) => piece.out), widths };
 }
 
 /** Which end of an element a wave starts at. */
@@ -317,8 +317,8 @@ type Side = "start" | "end";
  * resting pointer and the page decides, cross the element and the pointer
  * does.
  */
-function follows(el: HTMLElement): Set<string> {
-  const asked = getComputedStyle(el).getPropertyValue("--animate-weight-direction").trim();
+function follows(element: HTMLElement): Set<string> {
+  const asked = getComputedStyle(element).getPropertyValue("--animate-weight-direction").trim();
   return new Set(asked ? asked.split(/\s+/) : []);
 }
 
@@ -334,8 +334,8 @@ const OTHER_END: Record<Side, Side> = { start: "end", end: "start" };
  * the text the other way. The flip has to invert with it, or a visit that runs
  * the pair home would put its band on backwards.
  */
-const flipFor = (el: HTMLElement, side: Side): string =>
-  (side === "end") !== (target(waves(el).way) === "0") ? "1" : "0";
+const flipFor = (element: HTMLElement, side: Side): string =>
+  (side === "end") !== (target(waves(element).way) === "0") ? "1" : "0";
 
 /**
  * Point a wave at one of its ends, for animateTextWeight.css to read.
@@ -345,28 +345,28 @@ const flipFor = (el: HTMLElement, side: Side): string =>
  * into a flip would go through a style container query, which settles one pass
  * later than an inherited value does.
  */
-function aim(el: HTMLElement, wave: "in" | "out", side: Side): void {
+function aim(element: HTMLElement, wave: "in" | "out", side: Side): void {
   const name = `--atw-flip-${wave}`;
-  const flip = flipFor(el, side);
+  const flip = flipFor(element, side);
   // The same end again would still throw the element's style away and have it
   // worked out afresh, for nothing.
-  if (el.style.getPropertyValue(name) === flip) return;
-  el.style.setProperty(name, flip);
+  if (element.style.getPropertyValue(name) === flip) return;
+  element.style.setProperty(name, flip);
 }
 
 /** The end one of an element's waves points at. Nothing written is a flip of 0. */
-function aimed(el: HTMLElement, wave: "in" | "out" = "in"): Side {
-  const flip = el.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
-  return flip === flipFor(el, "end") ? "end" : "start";
+function aimed(element: HTMLElement, wave: "in" | "out" = "in"): Side {
+  const flip = element.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
+  return flip === flipFor(element, "end") ? "end" : "start";
 }
 
 /**
  * An element's waves that are still on their way somewhere, either the leading
  * one or both.
  */
-function running(el: HTMLElement, which: "in" | "both"): Animation[] {
+function running(element: HTMLElement, which: "in" | "both"): Animation[] {
   const wanted = which === "in" ? "--atw-wave-in" : "--atw-wave";
-  return el
+  return element
     .getAnimations({ subtree: true })
     .filter((run) =>
       String((run as { transitionProperty?: string }).transitionProperty).startsWith(wanted),
@@ -381,8 +381,8 @@ function running(el: HTMLElement, which: "in" | "both"): Animation[] {
  * the other end changes nothing. Anywhere in between the units disagree, and
  * the flip re-sorts the line in a single frame.
  */
-function parked(el: HTMLElement, which: "in" | "out"): boolean {
-  return [...el.querySelectorAll<HTMLElement>(`.${LINE}`)].every((line) => {
+function parked(element: HTMLElement, which: "in" | "out"): boolean {
+  return [...element.querySelectorAll<HTMLElement>(`.${LINE}`)].every((line) => {
     const wave = Number(getComputedStyle(line).getPropertyValue(`--atw-wave-${which}`));
     // Not 0 and 1 exactly: a crossing can land a frame after the wave left an
     // end, and that early the units still nearly agree.
@@ -407,18 +407,18 @@ const turning = new WeakMap<HTMLElement, Side>();
  * nothing else. Waiting on a trailing wave as well would hold the end back for
  * a whole further crossing, and it would land in the middle of the next one.
  */
-function turn(el: HTMLElement, side: Side): void {
-  if (aimed(el) === side) return void turning.delete(el);
-  turning.set(el, side);
+function turn(element: HTMLElement, side: Side): void {
+  if (aimed(element) === side) return void turning.delete(element);
+  turning.set(element, side);
   const later = (): void => {
     // A turn since has asked for something else, and it does the waiting.
-    if (turning.get(el) !== side) return;
-    const waves = running(el, "in");
+    if (turning.get(element) !== side) return;
+    const waves = running(element, "in");
     // Parked, or nothing left to arrive because a wave was dropped where it
     // stood: either way the flip is as cheap now as it will ever be.
-    if (parked(el, "in") || !waves.length) {
-      turning.delete(el);
-      return aim(el, "in", side);
+    if (parked(element, "in") || !waves.length) {
+      turning.delete(element);
+      return aim(element, "in", side);
     }
     // allSettled, because a wave turned round on the way rejects rather than
     // resolves. Either way it is nearer an end than it was, so look again.
@@ -431,10 +431,10 @@ function turn(el: HTMLElement, side: Side): void {
  * Where an element's waves were last sent, off its own inline style. Nothing
  * written reads as a fresh element: both waves home, running up from the start.
  */
-function waves(el: HTMLElement): Waves {
+function waves(element: HTMLElement): Waves {
   const end = (name: string): End =>
-    el.style.getPropertyValue(name) === "1" ? "1" : "0";
-  const way: Way = el.style.getPropertyValue("--atw-way") === "-1" ? "-1" : "1";
+    element.style.getPropertyValue(name) === "1" ? "1" : "0";
+  const way: Way = element.style.getPropertyValue("--atw-way") === "-1" ? "-1" : "1";
   return { in: end("--atw-in"), out: end("--atw-out"), way };
 }
 
@@ -443,10 +443,10 @@ function waves(el: HTMLElement): Waves {
  * already in place writes nothing new, and saying only the half that changed
  * would mean guessing which half that is.
  */
-function send(el: HTMLElement, w: Waves): void {
-  el.style.setProperty("--atw-in", w.in);
-  el.style.setProperty("--atw-out", w.out);
-  el.style.setProperty("--atw-way", w.way);
+function send(element: HTMLElement, sent: Waves): void {
+  element.style.setProperty("--atw-in", sent.in);
+  element.style.setProperty("--atw-out", sent.out);
+  element.style.setProperty("--atw-way", sent.way);
 }
 
 /**
@@ -468,19 +468,19 @@ function send(el: HTMLElement, w: Waves): void {
  * pointer sitting on the text has them at opposite ends holding it at full
  * weight, and turning the pair round under that would let go of all of it.
  */
-function settle(el: HTMLElement): void {
-  const runs = running(el, "both");
+function settle(element: HTMLElement): void {
+  const runs = running(element, "both");
   if (runs.length) {
-    void Promise.allSettled(runs.map((run) => run.finished)).then(() => settle(el));
+    void Promise.allSettled(runs.map((run) => run.finished)).then(() => settle(element));
     return;
   }
   // A flip means an end only for the way the pair is running, so turning the
   // pair round writes both again for the ends they meant. Left alone, a page
   // that switches the text on next would send it from the wrong end.
-  const ends = { in: aimed(el, "in"), out: aimed(el, "out") };
-  send(el, settled(waves(el)));
-  aim(el, "in", ends.in);
-  aim(el, "out", ends.out);
+  const ends = { in: aimed(element, "in"), out: aimed(element, "out") };
+  send(element, settled(waves(element)));
+  aim(element, "in", ends.in);
+  aim(element, "out", ends.out);
 }
 
 /** Elements whose wave follows the page. */
@@ -517,9 +517,9 @@ function watchScroll(): void {
       const now: Side = moved > 0 ? "start" : "end";
       if (now === scrolledToward) return;
       scrolledToward = now;
-      for (const el of scrollers) {
-        if (!el.isConnected) forget(el);
-        else if (follows(el).has("scroll")) turn(el, now);
+      for (const element of scrollers) {
+        if (!element.isConnected) forget(element);
+        else if (follows(element).has("scroll")) turn(element, now);
       }
     },
     { passive: true },
@@ -564,7 +564,7 @@ const sending = new Map<HTMLElement, { off: AbortController; pointer: boolean }>
  * together, and a switch that a jump by End flips on and off again a frame
  * later would show nothing at all; sent from here, it gets the least band.
  */
-function cross(el: HTMLElement, signal: AbortSignal, pointer: boolean): void {
+function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): void {
   // On the clock, so the switch can tell which of them flipped it.
   let enteredAt = 0;
   let leftAt = 0;
@@ -573,27 +573,27 @@ function cross(el: HTMLElement, signal: AbortSignal, pointer: boolean): void {
   let arrived = 0;
   // The end the trailing wave is to come off from, if the pointer lets go.
   let exit: Side = "start";
-  const near = (e: PointerEvent): Side => {
-    const box = el.getBoundingClientRect();
+  const near = (event: PointerEvent): Side => {
+    const box = element.getBoundingClientRect();
     // Line by line the wave runs top to bottom, so the height the pointer
     // crossed at is what says which end it is nearest.
-    if (!el.querySelector(`.${CHAR}`)) return e.clientY < box.top + box.height / 2 ? "start" : "end";
+    if (!element.querySelector(`.${CHAR}`)) return event.clientY < box.top + box.height / 2 ? "start" : "end";
     // Along a line, the left half is the start unless the text runs the other way.
-    const rtl = getComputedStyle(el).direction === "rtl";
-    return e.clientX < box.left + box.width / 2 !== rtl ? "start" : "end";
+    const rtl = getComputedStyle(element).direction === "rtl";
+    return event.clientX < box.left + box.width / 2 !== rtl ? "start" : "end";
   };
   // Taken down when the element is dropped: one that comes back gets a fresh
   // set, never a second one on top.
   if (pointer) {
-    el.addEventListener("pointerenter", (e) => {
+    element.addEventListener("pointerenter", (event) => {
       enteredAt = ++clock;
       // Only where the leading wave is parked: every unit reads it as the same
       // number there, so counting it from the other end changes nothing.
-      if (parked(el, "in")) aim(el, "in", near(e));
+      if (parked(element, "in")) aim(element, "in", near(event));
     }, { signal });
-    el.addEventListener("pointerleave", (e) => {
+    element.addEventListener("pointerleave", (event) => {
       leftAt = ++clock;
-      exit = OTHER_END[near(e)];
+      exit = OTHER_END[near(event)];
     }, { signal });
   }
   /*
@@ -602,49 +602,49 @@ function cross(el: HTMLElement, signal: AbortSignal, pointer: boolean): void {
    * section it passes, finds the doorbell still at its old value: the browser
    * cancels it rather than running it again. The cancel is the same news.
    */
-  const hear = (e: TransitionEvent): void => {
+  const hear = (event: TransitionEvent): void => {
     // One per line, and the first speaks for all of them.
-    if (e.propertyName !== "--atw-on" || e.target !== el.querySelector(`.${LINE}`)) return;
-    const scroll = scrollers.has(el);
-    if (switchedOn(el)) {
+    if (event.propertyName !== "--atw-on" || event.target !== element.querySelector(`.${LINE}`)) return;
+    const scroll = scrollers.has(element);
+    if (switchedOn(element)) {
       onAt = ++clock;
-      arrived = e.timeStamp;
+      arrived = event.timeStamp;
       // The page switched it on, not the pointer: from the end it scrolled
       // toward, whatever the last pointer to pass left behind.
-      if (scroll && scrolledAt > enteredAt && parked(el, "in")) aim(el, "in", scrolledToward);
+      if (scroll && scrolledAt > enteredAt && parked(element, "in")) aim(element, "in", scrolledToward);
       // Leading wave to the far end, trailing wave home again, every time. On a
       // fresh visit the trailing one is already home and only the leading one
       // moves, which opens the band; mid-band the leading one has already
       // arrived and only the trailing one moves, which sends the weight back in
       // in the order it let go. Saying both either way is what stops this
       // being a no-op, which is a switch that does nothing at all.
-      el.style.removeProperty("--atw-out-wait");
-      send(el, entered(waves(el)));
+      element.style.removeProperty("--atw-out-wait");
+      send(element, entered(waves(element)));
       return;
     }
     // Only where the trailing wave is parked: one sent home again mid-band
     // keeps the end it had, and an end moved mid-crossing re-sorts the line.
     // The pointer's end if leaving is what let go, else the page's.
-    const end = leftAt > Math.max(onAt, scrolledAt) ? exit : scroll ? scrolledToward : aimed(el);
-    if (parked(el, "out")) aim(el, "out", end);
+    const end = leftAt > Math.max(onAt, scrolledAt) ? exit : scroll ? scrolledToward : aimed(element);
+    if (parked(element, "out")) aim(element, "out", end);
     // How far the trailing wave follows the leading one by: however long the
     // switch was on, and never less than --atw-wave-min-delay. Brush a link in
     // a moment and the band would otherwise be a letter wide and show nothing.
     // The subtraction is left to CSS, which knows what that floor is.
-    el.style.setProperty(
+    element.style.setProperty(
       "--atw-out-wait",
-      `max(0s, calc(var(--atw-wave-min-delay) - ${Math.round(e.timeStamp - arrived)}ms))`,
+      `max(0s, calc(var(--atw-wave-min-delay) - ${Math.round(event.timeStamp - arrived)}ms))`,
     );
-    send(el, left(waves(el)));
-    settle(el);
+    send(element, left(waves(element)));
+    settle(element);
   };
-  el.addEventListener("transitionrun", hear, { signal });
-  el.addEventListener("transitioncancel", hear, { signal });
+  element.addEventListener("transitionrun", hear, { signal });
+  element.addEventListener("transitioncancel", hear, { signal });
 }
 
 /** Whether the page's switch is on for an element right now. */
-const switchedOn = (el: HTMLElement): boolean =>
-  getComputedStyle(el).getPropertyValue("--animate-weight").trim() === "true";
+const switchedOn = (element: HTMLElement): boolean =>
+  getComputedStyle(element).getPropertyValue("--animate-weight").trim() === "true";
 
 /**
  * Follow whatever the element asked its direction to follow. Both watchers
@@ -654,45 +654,45 @@ const switchedOn = (el: HTMLElement): boolean =>
  * Each is joined on its own, and an element told to follow something else
  * later is simply dropped from the one it left.
  */
-function watch(el: HTMLElement): void {
-  const modes = follows(el);
+function watch(element: HTMLElement): void {
+  const modes = follows(element);
   const pointer = modes.has("pointer");
   const scroll = modes.has("scroll");
   if (scroll) {
     watchScroll();
-    scrollers.add(el);
-    turn(el, scrolledToward);
+    scrollers.add(element);
+    turn(element, scrolledToward);
   } else {
-    scrollers.delete(el);
+    scrollers.delete(element);
   }
   // Calibration runs again on every resize; the listeners stay for as long as
   // the element follows the same things, so they are hung once for that.
-  const had = sending.get(el);
+  const had = sending.get(element);
   if (had && had.pointer !== pointer) {
     had.off.abort();
-    sending.delete(el);
+    sending.delete(element);
   }
-  if ((pointer || scroll) && !sending.has(el)) {
+  if ((pointer || scroll) && !sending.has(element)) {
     const off = new AbortController();
-    sending.set(el, { off, pointer });
-    cross(el, off.signal, pointer);
+    sending.set(element, { off, pointer });
+    cross(element, off.signal, pointer);
     // Already on, and nothing flips it to say so: send the waves where the
     // switch would have, so the first time it goes off has a band to lift.
-    if (switchedOn(el)) send(el, entered(waves(el)));
+    if (switchedOn(element)) send(element, entered(waves(element)));
   }
   if (!pointer && !scroll) {
-    sending.get(el)?.off.abort();
-    sending.delete(el);
+    sending.get(element)?.off.abort();
+    sending.delete(element);
     // The waves were the script's to send. Left where it last sent them, they
     // would hold the text there, whatever the page's switch says after.
     for (const name of ["--atw-in", "--atw-out", "--atw-out-wait", "--atw-way"])
-      el.style.removeProperty(name);
+      element.style.removeProperty(name);
     // A fixed end again: drop what the script last wrote, or the stylesheet
     // would still be read through it. The waiting turn first, or it would put
     // an end back after the rest had gone.
-    turning.delete(el);
-    el.style.removeProperty("--atw-flip-in");
-    el.style.removeProperty("--atw-flip-out");
+    turning.delete(element);
+    element.style.removeProperty("--atw-flip-in");
+    element.style.removeProperty("--atw-flip-out");
   }
 }
 
@@ -701,11 +701,11 @@ const resized = new Set<HTMLElement>();
 let watchingResize = false;
 
 /** Let go of an element that has left the document, listeners and all. */
-function forget(el: HTMLElement): void {
-  resized.delete(el);
-  scrollers.delete(el);
-  sending.get(el)?.off.abort();
-  sending.delete(el);
+function forget(element: HTMLElement): void {
+  resized.delete(element);
+  scrollers.delete(element);
+  sending.get(element)?.off.abort();
+  sending.delete(element);
 }
 
 /**
@@ -725,9 +725,9 @@ function watchResize(): void {
     width = innerWidth;
     clearTimeout(pending);
     pending = setTimeout(() => {
-      for (const el of resized) {
-        if (el.isConnected) calibrate(el);
-        else forget(el);
+      for (const element of resized) {
+        if (element.isConnected) calibrate(element);
+        else forget(element);
       }
     }, 150);
   });
@@ -737,42 +737,42 @@ function watchResize(): void {
  * Split one element into its lines, then its units, and write their values.
  * Done again after each resize, for as long as the element is in the document.
  */
-export function calibrate(el: HTMLElement): Report | null {
-  const r = range(el);
-  if (!r) return null;
+export function calibrate(element: HTMLElement): Report | null {
+  const asked = range(element);
+  if (!asked) return null;
   for (const old of resized) if (!old.isConnected) forget(old);
-  resized.add(el);
+  resized.add(element);
   watchResize();
-  watch(el);
-  const { from, to } = r;
-  const weights = Array.from({ length: STOPS }, (_, k) => from + ((to - from) * k) / (STOPS - 1));
+  watch(element);
+  const { from, to } = asked;
+  const weights = Array.from({ length: STOPS }, (_, stop) => from + ((to - from) * stop) / (STOPS - 1));
   // The element's own spacing is the from state; every stop adds to it.
-  const base = parseFloat(getComputedStyle(el).letterSpacing) || 0;
+  const base = parseFloat(getComputedStyle(element).letterSpacing) || 0;
   // Lines break at the from weight, so the element must sit there.
-  if (Number(getComputedStyle(el).fontWeight) !== from) el.style.fontWeight = String(from);
+  if (Number(getComputedStyle(element).fontWeight) !== from) element.style.fontWeight = String(from);
 
-  restore(el);
-  const texts = readLines(el);
+  restore(element);
+  const texts = readLines(element);
   const spans = texts.map((text) => {
     const span = document.createElement("span");
     span.className = LINE;
     span.textContent = text;
     return span;
   });
-  el.replaceChildren(...spans.flatMap((s, i) => (i ? [document.createElement("br"), s] : [s])));
+  element.replaceChildren(...spans.flatMap((span, index) => (index ? [document.createElement("br"), span] : [span])));
   // The far end of a line-by-line wave. A line split into characters sets its
   // own, which is the one its characters then see.
-  el.style.setProperty("--atw-delay-total", String(spans.length - 1));
+  element.style.setProperty("--atw-delay-total", String(spans.length - 1));
 
   // Falls back to whole lines if a line cannot be split into characters.
-  let by: Mode = r.by;
+  let by: Mode = asked.by;
   // Measure in place, before the next paint, with the tween switched off.
-  const lines = spans.map((span, i): Line => {
-    const text = texts[i] ?? "";
+  const lines = spans.map((span, index): Line => {
+    const text = texts[index] ?? "";
     span.style.transition = "none";
     span.style.letterSpacing = `${base}px`;
-    const widthAt = (w: number) => {
-      span.style.fontWeight = String(w);
+    const widthAt = (weight: number) => {
+      span.style.fontWeight = String(weight);
       return span.getBoundingClientRect().width;
     };
     const target = widthAt(from);
@@ -797,27 +797,27 @@ export function calibrate(el: HTMLElement): Report | null {
     // depend on the weight.
     const widths: number[] = [];
     const counts: number[] = [];
-    for (const w of weights) {
-      const width = widthAt(w);
+    for (const weight of weights) {
+      const width = widthAt(weight);
       widths.push(width);
       counts.push(slots(span, base, width));
     }
-    const spacing = widths.map((w, k) => base + (target - w) / (counts[k] ?? 1));
+    const spacing = widths.map((width, stop) => base + (target - width) / (counts[stop] ?? 1));
     values(span, "ls", spacing);
     // One line, one delay: the block arrives line by line.
-    unit(span, from, to, i);
+    unit(span, from, to, index);
     span.style.removeProperty("font-weight");
     done();
-    return { text, target, widths, spacing, delayCount: i, units: [] };
+    return { text, target, widths, spacing, delayCount: index, units: [] };
   });
   return { from, to, by, weights, lines };
 }
 
 /** Calibrate every animated element under root, now and after each resize. */
 export function calibrateAll(root: ParentNode = document): HTMLElement[] {
-  const els = findAll(root);
-  els.forEach((el) => calibrate(el));
-  return els;
+  const elements = findAll(root);
+  elements.forEach((element) => calibrate(element));
+  return elements;
 }
 
 /** Wait for the fonts, then calibrate the page. */

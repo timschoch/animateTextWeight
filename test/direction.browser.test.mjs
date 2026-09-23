@@ -33,7 +33,7 @@ test("a heading switched from pointer to scroll still goes light", async () => {
       const use = document.querySelector("#sec-use");
       scrollTo(0, use.getBoundingClientRect().top + scrollY - innerHeight / 2 + 50);
     });
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     assert.equal(await progress(page, "sec-about"), 0, "About let go");
     assert.equal(await progress(page, "sec-use"), 1, "Use switched on");
   } finally {
@@ -57,7 +57,7 @@ test("a heading switched on for a frame in scroll mode still waves", async () =>
     await page.goto(`${server.url}/demo/index.html`);
     await page.waitForSelector("#sec-about.active > h3 .animate-text-weight-unit");
     await page.select("#direction", "scroll");
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     // On for one frame, then off, and the highest the first unit got after.
     const peak = await page.evaluate(
       () =>

@@ -192,7 +192,7 @@ calibrateAll(document.querySelector("main"));
 
 #### Known limitations
 
-- The script measures again only when the window width changes. After a new font size, a new container width, a new window height with `vh` font sizes or a font that loads late, call `calibrate(el)`.
+- The script measures again only when the window width changes. After a new font size, a new container width, a new window height with `vh` font sizes or a font that loads late, call `calibrate(element)`.
 
 ## Extras
 

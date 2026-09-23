@@ -36,21 +36,21 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 // The stylesheet's defaults, and the delay the README asks for.
-const N = 8;
-const D = 40;
-const DUR = 300;
-const T = N - 1;
-const S = T * D + DUR;
+const UNITS = 8;
+const DELAY = 40;
+const DURATION = 300;
+const LAST = UNITS - 1;
+const SPAN = LAST * DELAY + DURATION;
 
-const clamp = (v) => Math.min(1, Math.max(0, v));
+const clamp = (value) => Math.min(1, Math.max(0, value));
 
 /** One unit's share of a wave: how far it has come, less what the unit waits. */
 const share = (wave, flip, count) =>
-  clamp((wave * S - (count + flip * (T - 2 * count)) * D) / DUR);
+  clamp((wave * SPAN - (count + flip * (LAST - 2 * count)) * DELAY) / DURATION);
 
-/** A wave at time t: a linear ramp from `from` to `to`, starting at `start`. */
-const ramp = (from, to, start) => (t) =>
-  from + (to - from) * clamp((t - start) / S);
+/** A wave at a time: a linear ramp from `from` to `to`, starting at `start`. */
+const ramp = (from, to, start) => (time) =>
+  from + (to - from) * clamp((time - start) / SPAN);
 
 /**
  * Every unit's progress at every millisecond of a crossing: the leading wave
@@ -60,11 +60,11 @@ function grid({ from = 0, to = 1, lag, flipIn = 0, flipOut = 0, way = 1 }) {
   const waveIn = ramp(from, to, 0);
   const waveOut = ramp(from, to, lag);
   const rows = [];
-  for (let t = 0; t <= S + lag; t++) {
+  for (let time = 0; time <= SPAN + lag; time++) {
     const row = [];
-    for (let i = 0; i < N; i++) {
-      const rise = share(waveIn(t), flipIn, i);
-      const fall = share(waveOut(t), flipOut, i);
+    for (let index = 0; index < UNITS; index++) {
+      const rise = share(waveIn(time), flipIn, index);
+      const fall = share(waveOut(time), flipOut, index);
       row.push(clamp((rise - fall) * way));
     }
     rows.push(row);
@@ -82,9 +82,9 @@ test("progress stays between 0 and 1", () => {
     ]) {
       for (const flipIn of [0, 1]) {
         for (const flipOut of [0, 1]) {
-          for (const lag of [0, D, DUR, 400]) {
+          for (const lag of [0, DELAY, DURATION, 400]) {
             const rows = grid({ from, to, lag, flipIn, flipOut, way });
-            for (const v of rows.flat()) assert.ok(v >= 0 && v <= 1);
+            for (const progress of rows.flat()) assert.ok(progress >= 0 && progress <= 1);
           }
         }
       }
@@ -96,9 +96,9 @@ test("the flip says which end reaches full weight first", () => {
   // Cut off before the trailing wave starts: the leading one alone, so every
   // unit ends at 1.
   const full = (flipIn) => {
-    const rows = grid({ lag: S, flipIn }).slice(0, S + 1);
-    const at = (i) => rows.findIndex((row) => row[i] === 1);
-    return { first: at(0), last: at(N - 1) };
+    const rows = grid({ lag: SPAN, flipIn }).slice(0, SPAN + 1);
+    const at = (index) => rows.findIndex((row) => row[index] === 1);
+    return { first: at(0), last: at(LAST) };
   };
   const plain = full(0);
   assert.ok(plain.first < plain.last, JSON.stringify(plain));
@@ -109,13 +109,13 @@ test("the flip says which end reaches full weight first", () => {
 test("regression: a pair running home with flips inverted draws the same band", () => {
   // Running down, a wave lets go of the longest wait first, so the band only
   // crosses the same way when both flips invert with it.
-  for (const lag of [D, DUR, 400]) {
+  for (const lag of [DELAY, DURATION, 400]) {
     const up = grid({ lag });
     const home = grid({ from: 1, to: 0, lag, flipIn: 1, flipOut: 1, way: -1 });
     assert.equal(home.length, up.length);
-    up.forEach((row, t) =>
-      row.forEach((v, i) =>
-        assert.ok(Math.abs(v - home[t][i]) < 1e-9, `lag ${lag} t ${t} i ${i}`)
+    up.forEach((row, time) =>
+      row.forEach((progress, index) =>
+        assert.ok(Math.abs(progress - home[time][index]) < 1e-9, `lag ${lag} time ${time} index ${index}`)
       )
     );
   }
@@ -124,12 +124,12 @@ test("regression: a pair running home with flips inverted draws the same band", 
 test("a band is as heavy as its lag is long, up to a duration", () => {
   // The two waves run at the same speed, so a unit is lit for exactly the lag
   // and reaches lag / duration of full weight.
-  for (const lag of [D, DUR / 2, DUR, 400]) {
-    assert.ok(Math.abs(peak(grid({ lag })) - Math.min(1, lag / DUR)) < 1e-9);
+  for (const lag of [DELAY, DURATION / 2, DURATION, 400]) {
+    assert.ok(Math.abs(peak(grid({ lag })) - Math.min(1, lag / DURATION)) < 1e-9);
   }
   // One unit's delay is enough to see; over half a duration is over half.
-  assert.ok(peak(grid({ lag: D })) > 0);
-  assert.ok(peak(grid({ lag: DUR / 2 + 1 })) > 0.5);
+  assert.ok(peak(grid({ lag: DELAY })) > 0);
+  assert.ok(peak(grid({ lag: DURATION / 2 + 1 })) > 0.5);
 });
 
 test("two waves that run together draw nothing", () => {

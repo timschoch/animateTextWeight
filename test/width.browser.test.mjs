@@ -30,16 +30,16 @@ async function measure(page, containerId) {
     const lines = [...root.querySelectorAll(".animate-text-weight-line")];
     const unit = root.querySelector(".animate-text-weight-unit");
     return {
-      widths: lines.map((l) => l.getBoundingClientRect().width),
+      widths: lines.map((line) => line.getBoundingClientRect().width),
       fontWeight: unit ? getComputedStyle(unit).fontWeight : null,
     };
   }, containerId);
 }
 
-test("line widths do not move from the from weight to the to weight", async (t) => {
+test("line widths do not move from the from weight to the to weight", async (context) => {
   const server = await serve();
   const browser = await puppeteer.launch({ channel: "chrome", headless: true });
-  t.after(async () => {
+  context.after(async () => {
     await browser.close();
     server.close();
   });
@@ -51,7 +51,7 @@ test("line widths do not move from the from weight to the to weight", async (t) 
   const cases = ["line-single", "line-multi", "char-mode"];
 
   for (const id of cases) {
-    await t.test(id, async () => {
+    await context.test(id, async () => {
       const rest = await measure(page, id);
       assert.ok(rest.widths.length > 0, `${id}: expected at least one line`);
 
@@ -60,7 +60,7 @@ test("line widths do not move from the from weight to the to weight", async (t) 
       }, id);
       // The transition span is at least 1ms even at duration: 0s (see
       // animateTextWeight.css, --atw-span). A frame is enough to settle it.
-      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const on = await measure(page, id);
 
       await page.evaluate((id) => {
@@ -73,11 +73,11 @@ test("line widths do not move from the from weight to the to weight", async (t) 
         `${id}: font-weight did not change, the assertion below would be vacuous`,
       );
       assert.strictEqual(on.widths.length, rest.widths.length, `${id}: line count changed`);
-      on.widths.forEach((width, i) => {
-        const diff = Math.abs(width - rest.widths[i]);
+      on.widths.forEach((width, index) => {
+        const diff = Math.abs(width - rest.widths[index]);
         assert.ok(
           diff <= TOLERANCE_PX,
-          `${id}: line ${i} moved ${diff.toFixed(3)}px (${rest.widths[i].toFixed(3)} -> ${width.toFixed(3)})`,
+          `${id}: line ${index} moved ${diff.toFixed(3)}px (${rest.widths[index].toFixed(3)} -> ${width.toFixed(3)})`,
         );
       });
     });
