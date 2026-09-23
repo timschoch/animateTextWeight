@@ -7,9 +7,21 @@
  *   --animate-weight-to:   700;   the weight it animates to
  *   --animate-weight:      true;  on any state or ancestor: switch it on
  *
- * And two more if you want the text to arrive in a wave:
+ * And three more if you want the text to arrive in a wave:
  *   --animate-weight-by:    character;  one unit per character, not per line
  *   --animate-weight-delay: 40ms;       one unit waits this long after the one before it
+ *   --animate-weight-direction: end;    the wave runs the other way. Or
+ *                                       pointer, or scroll, or both: the
+ *                                       script points it where the pointer or
+ *                                       the page came from, every time it
+ *                                       moves, and the last to move has the
+ *                                       say.
+ *
+ * And two if you want the color to travel with the weight:
+ *   --animate-weight-color-from: #1c1c1c;  the color it animates from,
+ *                                          else the text color
+ *   --animate-weight-color-to:   #c8102e;  the color it animates to,
+ *                                          else the text color
  *
  * The script (index.ts) splits the element into one span per rendered
  * line, class .animate-text-weight-line, and in character mode splits each
@@ -61,10 +73,120 @@
   inherits: true;
   initial-value: 0s;
 }
+/*
+ * --animate-weight-direction is which end of the line the wave starts at: the
+ * one the text starts at, or the one it ends at. Logical, so right-to-left
+ * text waves right-to-left; in line mode the ends are the first and the last
+ * line instead.
+ *
+ * pointer and scroll hand the choice to the script. Name both and the script
+ * watches both, and whichever moved last has the say.
+ *
+ * It is deliberately not registered with @property. A registration takes one
+ * syntax, and the value is either one of four words or two of them at once;
+ * the loose "<custom-ident>+" that admits the pair is not what the style query
+ * further down compares against. Left unregistered, the query compares the
+ * words themselves, which is all this ever asked for.
+ *
+ * --atw-flip-in and --atw-flip-out are what the waits actually read: 0 counts
+ * from the start of the text, 1 counts from the far end. Numbers rather than
+ * words, and inherited rather than queried, because the script writes them
+ * while the pointer is already arriving. An inherited value reaches the units
+ * in the same pass that turns :hover on; a container query reaches them one
+ * pass later, by which time the visit runs the old way round.
+ */
+@property --atw-flip-in {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --atw-flip-out {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+/*
+ * The two waves. Each is 0 before it has started and 1 once it has passed
+ * everything, and a unit is at full weight between the one and the other:
+ * --atw-wave-in brings the weight up, --atw-wave-out takes it away again.
+ *
+ * Two, so that the two fronts can be on the text at the same time. One wave
+ * has to arrive everywhere before it can turn round, which leaves the text
+ * sitting at full weight for a whole crossing while the far end waits its
+ * turn. Two waves let the second follow the first at a fixed distance, and
+ * what crosses the text is a band of weight rather than a tide that comes in
+ * and then goes out.
+ *
+ * One transition per line carries each, and every unit works its own share out
+ * of them. That is the whole reason they exist. A delay per unit would mean a
+ * unit that has not started yet has nothing running to turn round — switch a
+ * wave off while it is still waiting and the browser drops it where it stands,
+ * and that letter never moves at all. Brush past a link, or scroll a heading
+ * out of view mid-wave, and the wave breaks apart. Nothing here ever waits:
+ * every unit is reading numbers that are already moving, so a wave can be
+ * turned round at any moment and comes apart at none.
+ */
+@property --atw-wave-in {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --atw-wave-out {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+/* A unit's share of each wave, which the weight below is the gap between. */
+@property --atw-rise {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+@property --atw-fall {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+/*
+ * Which way round the two waves are running: 1 up, -1 back down.
+ *
+ * A visit leaves both waves parked at the far end from the one it started at,
+ * and the next one runs them home again. So nothing is ever put back: the
+ * weight is the gap between the two waves whichever way they travel, and this
+ * is only the sign that keeps the gap positive. Putting them back instead
+ * would mean a second crossing of nothing to look at between every two visits.
+ */
+@property --atw-way {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+/*
+ * The page's switch again, as a number that can be transitioned, so that the
+ * script hears it change. A pointer-following element's waves are the script's
+ * to send, and a hover is not the only thing that switches it: a class or the
+ * page can hold it on while the pointer comes and goes. The transition is a
+ * doorbell and nothing reads the value.
+ */
+@property --atw-on {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
 /* How many delays this unit waits: the count of the one before it, plus one. */
 @property --atw-delay-count {
   syntax: "<number>";
   inherits: false;
+  initial-value: 0;
+}
+/*
+ * The count of the last unit of the wave, which is how long the wave is. Set
+ * on whatever holds the units — the line in character mode, the element in
+ * line mode — and read by each of them to count from the far end.
+ */
+@property --atw-delay-total {
+  syntax: "<number>";
+  inherits: true;
   initial-value: 0;
 }
 /* The width a line is held at. */
@@ -76,10 +198,47 @@
 
 :root {
   --animate-weight-duration: 300ms;
-  --animate-weight-easing: ease;
+  /*
+   * Flat, because this shapes the wave's travel and not one unit's own change.
+   * A curve that is slow at both its ends crawls into the top and crawls back
+   * out of it, and the two together read as a pause at full weight.
+   */
+  --animate-weight-easing: linear;
+  /*
+   * The least the trailing wave ever follows the leading one by. Without a
+   * floor, a link brushed past in a moment gets a band a letter wide and shows
+   * nothing; with one, the pointer can be long gone and the band still crosses.
+   */
+  --atw-wave-min-delay: 400ms;
 }
 
 .animate-text-weight-line {
+  /*
+   * How long the whole wave takes: the last unit's wait, plus the time that
+   * unit then spends moving. Never zero, or the wave below would have nothing
+   * to cross — reduced motion takes both of these to 0s.
+   */
+  --atw-span: max(
+    1ms,
+    calc(var(--atw-delay-total) * var(--animate-weight-delay) + var(--animate-weight-duration))
+  );
+  /*
+   * The script's own switches, in their own properties rather than in
+   * --animate-weight, because the page writes that one and the two would take
+   * it off each other. Unset, the leading wave is the page's to switch and the
+   * trailing one stays put; set, they say outright where each wave is headed.
+   */
+  --atw-wave-in: var(--atw-in, 0);
+  --atw-wave-out: var(--atw-out, 0);
+  /*
+   * The two moving parts. The trailing wave's delay is how far it follows the
+   * leading one by, which the script works out per visit and writes; a page
+   * that never leaves it alone never sets it, and the two run together.
+   */
+  transition:
+    --atw-wave-in var(--atw-span) var(--animate-weight-easing),
+    --atw-wave-out var(--atw-span) var(--animate-weight-easing) var(--atw-out-wait, 0s),
+    --atw-on 1ms;
   /* A line can get wider or narrower, never reflow. */
   white-space: nowrap;
   /* Fractional glyph advances, so Firefox does not snap letters mid-tween. */
@@ -166,14 +325,103 @@
   /*
    * Clamped, because an easing may overshoot: the spacing below stops at the
    * last stop, so an unclamped weight would keep going and break the width.
+   *
+   * Rounded to a whole weight, because Chrome (153, macOS, 2x screen) now and
+   * then draws a letter whose weight is a fresh fraction every frame with the
+   * wrong one for a single frame: mid-tween it flashes bold or light and is
+   * back the next. Plain spans tweening font-weight do it too, so it is not
+   * the waves. Whole weights are a few hundred values, the same ones every
+   * visit, and one weight is far below what the eye or the width can tell.
    */
-  font-weight: calc(
-    var(--atw-from) + (var(--atw-to) - var(--atw-from)) *
-      clamp(0, var(--animate-weight-progress), 1)
+  font-weight: round(
+    calc(
+      var(--atw-from) + (var(--atw-to) - var(--atw-from)) *
+        clamp(0, var(--animate-weight-progress), 1)
+    ),
+    1
   );
-  transition: --animate-weight-progress var(--animate-weight-duration) var(--animate-weight-easing);
-  /* After the shorthand, which would reset it. */
-  transition-delay: calc(var(--atw-delay-count) * var(--animate-weight-delay));
+  /*
+   * This unit's own share of each wave, worked out afresh every frame rather
+   * than transitioned: how far that wave has come, less what this unit waits
+   * for it, over the time this unit then takes.
+   *
+   * A flip of 0 leaves the count where it is; a flip of 1 turns it into
+   * (total - count), which is the same wave counted from the far end. Read
+   * here, in the open, so a wave already running turns round when its flip
+   * does — nothing is latched at the moment a tween starts, because no tween
+   * starts here.
+   */
+  --atw-wait-in: calc(
+    (
+        var(--atw-delay-count) + var(--atw-flip-in) *
+          (var(--atw-delay-total) - 2 * var(--atw-delay-count))
+      ) * var(--animate-weight-delay)
+  );
+  --atw-wait-out: calc(
+    (
+        var(--atw-delay-count) + var(--atw-flip-out) *
+          (var(--atw-delay-total) - 2 * var(--atw-delay-count))
+      ) * var(--animate-weight-delay)
+  );
+  /*
+   * tan(atan2(a, b)) is a / b. A time over a time is typed arithmetic, which
+   * Firefox does not ship yet: it drops the division silently and nothing
+   * moves. atan2 takes two times and tan hands back a plain number.
+   */
+  --atw-rise: clamp(
+    0,
+    tan(
+      atan2(
+        var(--atw-wave-in) * var(--atw-span) - var(--atw-wait-in),
+        max(1ms, var(--animate-weight-duration))
+      )
+    ),
+    1
+  );
+  --atw-fall: clamp(
+    0,
+    tan(
+      atan2(
+        var(--atw-wave-out) * var(--atw-span) - var(--atw-wait-out),
+        max(1ms, var(--animate-weight-duration))
+      )
+    ),
+    1
+  );
+  /*
+   * Full weight between the one wave and the other, and --atw-way to keep that
+   * gap the right way up when the pair is running back down.
+   *
+   * Clamped low as well as high, because the two waves need not run the same
+   * way round, and a unit the trailing wave reaches before the leading one
+   * would otherwise go past light and out the other side.
+   */
+  --animate-weight-progress: clamp(
+    0,
+    calc((var(--atw-rise) - var(--atw-fall)) * var(--atw-way)),
+    1
+  );
+}
+
+/*
+ * The color, if the element asks for one. An end left unset is the text color.
+ *
+ * It is read off the unit's own progress rather than transitioned itself, so
+ * it takes the curve, the duration and the delay the weight already has, and
+ * in character mode it arrives as the same wave. oklab because that is the
+ * space a plain color transition interpolates in.
+ *
+ * Not registered with @property, on purpose: a registration needs an
+ * initial-value, and that would hand every unit two colors no page asked for.
+ * The fallback is currentColor, which inside color is the inherited color, so
+ * an element that sets neither mixes its own color with itself and keeps it.
+ */
+.animate-text-weight-unit {
+  color: color-mix(
+    in oklab,
+    var(--animate-weight-color-to, currentColor) calc(clamp(0, var(--animate-weight-progress), 1) * 100%),
+    var(--animate-weight-color-from, currentColor)
+  );
 }
 
 /*
@@ -198,10 +446,40 @@
   );
 }
 
-/* The switch. The element is the unit's style container. */
+/*
+ * The page's switch, which comes after the line's own rule so that it wins
+ * while the page holds it on. The element is the line's style container.
+ *
+ * --atw-in still ahead of it, so that a script following the pointer keeps the
+ * last word either way: it hears the switch through --atw-on and sends the
+ * waves itself, so a band coming off is never cut short by the switch.
+ */
 @container style(--animate-weight: true) {
+  .animate-text-weight-line {
+    --atw-wave-in: var(--atw-in, 1);
+    --atw-on: 1;
+  }
+}
+
+/*
+ * The wave the other way round: a unit waits for the ones behind it instead of
+ * the ones in front of it, so the last one moves first. The counts are not
+ * rewritten for this — they are read backwards from the far end, which is what
+ * --atw-delay-total holds. So direction can change at any time, on a state or
+ * a media query, and nothing has to be measured again.
+ *
+ * This is the stylesheet's own end, and only that. A separate property,
+ * because the script must not overwrite the word the stylesheet asked for —
+ * pointer and scroll write the flips on the element instead, where they reach
+ * the units by inheritance and this rule never matches.
+ *
+ * Both waves, because a page that fixes an end wants the whole thing that way
+ * round; the two only part company when the pointer sends them.
+ */
+@container style(--animate-weight-direction: end) {
   .animate-text-weight-unit {
-    --animate-weight-progress: 1;
+    --atw-flip-in: 1;
+    --atw-flip-out: 1;
   }
 }
 

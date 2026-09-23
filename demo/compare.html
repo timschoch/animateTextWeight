@@ -1,0 +1,106 @@
+<!doctype html>
+<!-- The picture at the top of the README. scripts/compare.mjs turns it into compare.png. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>animateTextWeight vs CSS font-weight</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../src/animateTextWeight.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Outfit", sans-serif;
+      }
+      .compare {
+        display: inline-grid;
+        gap: 48px;
+        padding: 40px 48px;
+        background: #fff;
+        color: #1c1c1c;
+      }
+      .lib,
+      .css {
+        position: relative;
+        isolation: isolate;
+      }
+      /* Spans both lines, behind the text; its side borders sit on the lines' right ends. */
+      .mark {
+        position: absolute;
+        z-index: -1;
+        box-sizing: border-box;
+        border: solid #cf222e;
+        border-width: 0 1px;
+        background: rgb(207 34 46 / 0.12);
+      }
+      .lib .mark {
+        border-color: #1a7f37;
+      }
+      h2 {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 400;
+        color: #777;
+      }
+      .word {
+        font-size: 96px;
+        line-height: 0.85;
+        white-space: nowrap;
+      }
+      /* Left: the library holds the bold line at the light line's width. */
+      .lib .word {
+        --animate-weight-from: 100;
+        --animate-weight-to: 900;
+        --animate-weight-duration: 0s;
+      }
+      .lib .word + .word {
+        --animate-weight: true;
+      }
+      /* Right: plain font-weight, the bold line grows. */
+      .css .word + .word {
+        font-weight: 900;
+      }
+      .css .word:first-of-type {
+        font-weight: 100;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="compare" id="compare">
+      <div class="lib">
+        <h2>animateTextWeight</h2>
+        <div class="word">SIMPLY LOVELY</div>
+        <div class="word">SIMPLY LOVELY</div>
+      </div>
+      <div class="css">
+        <h2>CSS font-weight</h2>
+        <div class="word">UGLY INCHIDENT</div>
+        <div class="word">UGLY INCHIDENT</div>
+      </div>
+    </div>
+    <script type="module">
+      import { init } from "../dist/index.js";
+      await init();
+      await document.fonts.ready;
+      // Mark where each line's text ends, measured, so the picture stays true.
+      for (const box of document.querySelectorAll(".lib, .css")) {
+        const origin = box.getBoundingClientRect();
+        const words = [...box.querySelectorAll(".word")];
+        const ends = words.map((word) => {
+          const range = document.createRange();
+          range.selectNodeContents(word);
+          return range.getBoundingClientRect().right - origin.left;
+        });
+        const top = words[0].getBoundingClientRect().top - origin.top;
+        const bottom = words.at(-1).getBoundingClientRect().bottom - origin.top;
+        const mark = box.appendChild(document.createElement("div"));
+        mark.className = "mark";
+        mark.style.left = `${Math.min(...ends) - 1}px`;
+        mark.style.width = `${Math.abs(ends[0] - ends[1]) + 2}px`;
+        mark.style.top = `${top}px`;
+        mark.style.height = `${bottom - top}px`;
+        console.log(box.className, ends.map((end) => end.toFixed(2)).join(" "));
+      }
+      document.documentElement.dataset.ready = "";
+    </script>
+  </body>
+</html>
