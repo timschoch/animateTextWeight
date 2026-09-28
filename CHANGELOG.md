@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/timschoch/animateTextWeight/compare/v1.0.0...v1.1.0) (2026-09-28)
+
+
+### Features
+
+* add wave direction and waveNav ([#14](https://github.com/timschoch/animateTextWeight/issues/14)) ([33fb2ed](https://github.com/timschoch/animateTextWeight/commit/33fb2edff01e6ba87211113ad997af41f3e21512))
+
 ## 1.0.0 (2026-09-08)
 
 
