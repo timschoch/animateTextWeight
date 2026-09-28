@@ -1,0 +1,48 @@
+<!doctype html>
+<!--
+  Fixture for test/width.browser.test.mjs: proves the library's main promise,
+  that a line's width does not move between the from weight and the to
+  weight. Three cases, each --animate-weight-duration: 0s so the "on" state
+  is immediate: a single line (line mode), a block that wraps into several
+  lines (line mode), and one word split into characters (character mode).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>animateTextWeight width fixture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../src/animateTextWeight.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Outfit", sans-serif;
+        font-size: 48px;
+      }
+      .subject {
+        --animate-weight-from: 100;
+        --animate-weight-to: 900;
+        --animate-weight-duration: 0s;
+      }
+      .subject.on {
+        --animate-weight: true;
+      }
+      #line-multi .subject {
+        display: block;
+        width: 260px;
+      }
+      #char-mode .subject {
+        --animate-weight-by: character;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="line-single"><div class="subject">BEAUTIFUL DESIGN</div></div>
+    <div id="line-multi"><div class="subject">Animate text weight without moving a single line</div></div>
+    <div id="char-mode"><div class="subject">BEAUTIFUL</div></div>
+    <script type="module">
+      import { init } from "../../dist/index.js";
+      await init();
+      document.documentElement.dataset.ready = "";
+    </script>
+  </body>
+</html>

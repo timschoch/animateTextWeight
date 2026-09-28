@@ -3,17 +3,21 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>animateTextWeight sandbox</title>
-    <!-- One variable font for the demo. Any variable font works. -->
+    <title>animateTextWeight.js Demo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The page's own font, which stays whatever is picked below. -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <!-- The font picked in the controls. Any variable font works. -->
     <link id="font" href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
     <!-- The example fonts, so each button can show its own face. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Mozilla+Headline:wght@200..700&family=Playwrite+DE+LA:wght@100..400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:wght@100..900&family=Mozilla+Headline:wght@200..700&family=Playwrite+DE+LA:wght@100..400&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../src/animateTextWeight.css" />
+    <!-- Code coloring in GitHub's light theme. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/styles/github.min.css" />
     <style>
       :root {
         --label: clamp(100px, 15vw, 200px);
@@ -21,6 +25,8 @@
         --accent-soft: #f6e8ea;
         --muted: #6b6b6b;
         --line: #d9d9d9;
+        /* Left and right of the title, the nav and the sections. */
+        --gutter: 48px;
       }
       html {
         font-family: "Outfit", sans-serif;
@@ -30,11 +36,22 @@
       }
       body {
         margin: 0;
-        padding: 40px;
         color: #1c1c1c;
       }
+      /* The page below runs edge to edge; only the title keeps a gutter,
+         lined up with the sections. */
       h1 {
-        margin: 0 0 40px;
+        margin: 0;
+        padding: 40px var(--gutter);
+        /* Fixed like About's links. A band crosses it once on load. */
+        font-weight: 300;
+        --animate-weight-to: 800;
+        --animate-weight-by: character;
+        --animate-weight-delay: 30ms;
+        --animate-weight-direction: pointer;
+      }
+      h1:hover {
+        --animate-weight: true;
       }
       h2 {
         margin: 40px 0 8px;
@@ -45,13 +62,37 @@
       p {
         margin: 0;
       }
+      /* Inline code as a chip, the way GitHub renders it. */
       code {
         font-family: ui-monospace, monospace;
-        font-size: 15px;
+        font-size: 0.75em;
+        padding: 0.2em 0.4em;
+        border-radius: 6px;
+        background: rgb(129 139 152 / 0.12);
+        color: #1f2328;
+        white-space: nowrap;
       }
       .label {
         color: var(--muted);
         margin: 32px 0 8px;
+      }
+      /* The font picked in the controls: on the labels and on whatever animates,
+         never on the text around them. */
+      .controls > label,
+      .sample,
+      #measurements,
+      .scale,
+      .page-nav a,
+      .page-section > h3 {
+        font-family: var(--font, "Outfit"), sans-serif;
+      }
+      /* Every animated element, set from the Transform control. */
+      h1,
+      .sample,
+      .page-nav a,
+      .page-section > h3,
+      .links a {
+        text-transform: var(--case, uppercase);
       }
       /* Same look as the log table: bold label, a rule under each row. */
       .controls {
@@ -61,26 +102,17 @@
       }
       /* Both cells stretch to the row, so the rules under them line up. */
       .controls > * {
-        padding: 12px;
+        padding: 12px 0;
         border-bottom: 1px solid var(--line);
       }
       .controls > label {
         font-weight: 600;
       }
-      /* A full row, e.g. the preview. */
-      .controls > .full {
+      /* A title across both columns, over the controls that only shape the sandbox. */
+      .controls-group {
         grid-column: 1 / -1;
-      }
-      /* Group heading: one full row, no rule under it. */
-      .controls > h3 {
-        grid-column: 1 / -1;
-        margin: 24px 0 0;
-        border-bottom: none;
-        font-size: 15px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--muted);
+        margin: 0;
+        padding-top: 32px;
       }
       .controls input,
       .controls select {
@@ -100,14 +132,17 @@
       .controls input[type="number"] {
         width: 70px;
       }
+      .controls input[type="color"] {
+        width: 60px;
+        height: 38px;
+        padding: 2px;
+      }
       .controls input[type="url"] {
         width: 100%;
         box-sizing: border-box;
         margin-left: 0;
       }
       .source {
-        width: var(--w);
-        max-width: 100%;
         padding: 8px 12px;
         border: 1px solid var(--line);
       }
@@ -155,6 +190,8 @@
       .sample:hover {
         --animate-weight: true;
       }
+      /* The page below answers the page, not the pointer, so it has no hover
+         rule of its own. Only its nav does. */
 
       /*
        * Onion: every sample drawn on top of the one before it, faint. What
@@ -173,6 +210,10 @@
         position: absolute;
         inset: 0 auto auto 0;
         color: color-mix(in srgb, currentColor 10%, transparent);
+      }
+      /* The onion reads movement, not color, so a layer stays faint even with the color on. */
+      .onion .animate-text-weight-unit {
+        color: inherit;
       }
       /* One layer stays in flow, so the box has a height. */
       .onion > :first-child {
@@ -257,79 +298,880 @@
       .block.live:hover p {
         font-weight: var(--to);
       }
+
+      /*
+       * A live read-out of the crossings, so a real mouse can be read back:
+       * where it crossed, which end the script aimed at, what the stylesheet
+       * says each delay is and what the running tweens actually hold. Kept
+       * for the next time a direction looks wrong: add ?trace to the URL to
+       * show it.
+       */
+      .trace {
+        position: fixed;
+        /* Out of the sticky nav's way, and over everything it does cover. */
+        bottom: 8px;
+        right: 8px;
+        z-index: 10;
+        /* As wide as the columns need and no wider, up to the window. */
+        max-width: calc(100vw - 16px);
+        box-sizing: border-box;
+        padding: 8px;
+        font: 12px/1.5 ui-monospace, monospace;
+        color: white;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 4px;
+        pointer-events: none;
+      }
+      /*
+       * A div around the table, not the table itself: a table's background
+       * does not reach its own caption or anything put beside it, so the one
+       * control would have sat outside the black.
+       */
+      .trace table {
+        border-collapse: collapse;
+      }
+      .trace th,
+      .trace td {
+        padding: 2px 5px;
+        text-align: left;
+        /* Monospace columns only line up if the spaces in them are kept. */
+        white-space: pre;
+        /* The page's own rule under every cell, which this table does not want. */
+        border-bottom: 0;
+      }
+      /* After the left above, which is a class and a type and so outranks .num. */
+      .trace .num {
+        text-align: right;
+      }
+      /*
+       * The element's name is the one column with no length to it: a nav link
+       * is a word, a heading is a sentence. Cut it, so the seven readings
+       * beside it are never the ones pushed off the screen. It also undoes the
+       * page's own first-column width, which is sized for the control labels.
+       *
+       * The delay pairs get the same width for the opposite reason: they are
+       * the columns being compared, and two columns are easier to hold against
+       * each other when they are the same size.
+       */
+      .trace .wide {
+        width: 20ch;
+        max-width: 20ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .trace th {
+        color: #999;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      }
+      /* The newest crossing, which is the one being looked for. */
+      .trace tbody tr:first-child {
+        color: #7cf;
+      }
+      /* Above the table, at the right edge, out of the columns' way. */
+      .trace-tools {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      /* The panel is see-through to the mouse; its controls must not be. */
+      .trace button {
+        pointer-events: auto;
+        cursor: pointer;
+        font: inherit;
+        color: #999;
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 4px;
+        padding: 0 6px;
+      }
+      .trace button[aria-pressed="true"] {
+        color: #7cf;
+        border-color: #7cf;
+      }
+
+      /*
+       * Cursor mode: the last crossing again, carried beside the pointer, so a
+       * wave and the numbers that made it can be read without looking away to
+       * the corner. Down and to the right of the arrow, and deaf to the mouse,
+       * so it neither covers what is being hovered nor takes the hover itself.
+       */
+      .trace-cursor {
+        position: fixed;
+        z-index: 11;
+        translate: 14px 14px;
+        margin: 0;
+        padding: 4px 8px;
+        font: 12px/1.5 ui-monospace, monospace;
+        color: white;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 4px;
+        pointer-events: none;
+        /*
+         * Label left, value right of it, one pair per line. The value column
+         * takes the rest of the width so a number can sit at its right edge,
+         * the way the same number does in the table.
+         */
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 10px;
+      }
+      .trace-cursor dt {
+        color: #999;
+      }
+      .trace-cursor dd {
+        margin: 0;
+        /* The two halves of a delay pair only line up if their spaces stay. */
+        white-space: pre;
+      }
+      .trace-cursor .num {
+        text-align: right;
+      }
+      /* After the grid, which is an author rule and so beats the browser's own. */
+      .trace-cursor[hidden] {
+        display: none;
+      }
+      /*
+       * The verdict: the expected delays and the measured ones agree, or they
+       * do not. Set on the cell itself, so it beats the newest row's blue,
+       * which only reaches the cell by inheritance.
+       */
+      .trace .ok,
+      .trace-cursor .ok {
+        color: #7c7;
+      }
+      .trace .bad,
+      .trace-cursor .bad {
+        color: #f77;
+      }
+
+      /* A control's values, one per row: the value, then what it does. */
+      .states {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        margin: 8px 0 0;
+      }
+      .states dt {
+        font-style: italic;
+      }
+      .states dd {
+        margin: 0;
+      }
+      /* Too narrow for two columns: the value sits above what it does. */
+      @media (max-width: 1399px) {
+        .states {
+          grid-template-columns: 1fr;
+          row-gap: 0;
+        }
+        .states dd + dt {
+          margin-top: 8px;
+        }
+      }
+
+      /*
+       * The real world demo, put together the way a page really is: a nav
+       * stuck to the top and sections under it, set from the controls in it.
+       */
+      .page {
+        border-top: 1px solid var(--line);
+      }
+      .page-nav {
+        position: sticky;
+        top: 0;
+        /* Over the sandbox example, which stays over the controls. */
+        z-index: 2;
+        display: flex;
+        flex-wrap: wrap;
+        /* No gap and no padding of its own: the links' padding fills the bar,
+           so all of it is a click target. The first text still starts at the
+           gutter. */
+        padding: 0 calc(var(--gutter) - 14px);
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+      }
+      .page-nav a {
+        padding: 12px 14px;
+        color: inherit;
+        text-decoration: none;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+      }
+      .page-nav a:hover {
+        --animate-weight: true;
+      }
+      .page-section {
+        /* Room below so a heading arrives on its own. Padding, not margin:
+           the sections touch, so the middle of the screen is always in one. */
+        padding: calc(24px + 2.5vh) var(--gutter) 12.5vh;
+        /* Clear of the sticky nav when a link jumps here. */
+        scroll-margin-top: 80px;
+        transition: background-color 0.3s;
+      }
+      .page-section.active {
+        background: #fafafa;
+      }
+      /* The current section's link and heading, as waveNav marks them. */
+      .page-nav a[aria-current="true"],
+      .page-section.active > h3 {
+        --animate-weight: true;
+      }
+      .page-section > h3 {
+        margin: 0 0 calc(12px + 1.25vh);
+        font-size: 36px;
+      }
+      /* The container width control: the text is as wide as it says, the
+         section around it stays full width. */
+      .page-section > * {
+        max-width: var(--w);
+      }
+      /* Two columns: the example on the left, as wide as the container width
+         says, and the controls beside it. The column follows --w-col, which
+         only moves once the slider is let go, so the controls hold still
+         while the example resizes. */
+      .page-section > .sandbox {
+        display: grid;
+        grid-template-columns: min(var(--w-col), 100vw - 600px) 1fr;
+        gap: 40px;
+        max-width: none;
+      }
+      .sandbox-example {
+        position: sticky;
+        top: 80px;
+        align-self: start;
+        z-index: 1;
+      }
+      /* Never so wide that the controls have no room left. */
+      .sandbox-example > .sample {
+        max-width: calc(100vw - 600px);
+      }
+      .sandbox-example > .label {
+        margin-top: 8px;
+      }
+      /* A button and a link side by side. */
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 32px;
+        margin-top: 24px;
+      }
+      .links a {
+        text-decoration: none;
+      }
+      .links .button {
+        padding: 12px 28px;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        color: #1c1c1c;
+      }
+      .links a:is(:hover, :focus-visible) {
+        --animate-weight: true;
+      }
+      /* In About, as a site would set them: all in CSS, and fixed, so the
+         controls never touch them. */
+      .about-links a {
+        font-family: "Outfit", sans-serif;
+        font-weight: 300;
+        --animate-weight-by: character;
+        --animate-weight-delay: 25ms;
+        --animate-weight-direction: pointer;
+      }
+      /*
+       * Everything else below hangs off --animate-weight-progress on each
+       * character, the hook "Animate other properties" explains. So it rides
+       * the same wave: it sweeps in from the side the pointer came from.
+       */
+      .about-links .button {
+        --animate-weight-to: 700;
+        --animate-weight-color-from: #1c1c1c;
+        --animate-weight-color-to: #3e2415;
+        --pad-block: 12px;
+        --pad-inline: 28px;
+        padding: var(--pad-block) var(--pad-inline);
+        border-color: #3e2415;
+        /* Clipped round, inside the border, so the characters' fill takes the
+           button's shape and never covers the outline. */
+        overflow: hidden;
+      }
+      /*
+       * Each character's box is stretched to the button's edges, with margins
+       * that take the stretch back, so nothing moves. Its fill is a light tint
+       * that comes in with its progress; mid-wave the characters are part way,
+       * so the front of the fill is itself a soft gradient that travels.
+       */
+      .about-links .button .animate-text-weight-unit {
+        --p: clamp(0, var(--animate-weight-progress), 1);
+        padding-block: var(--pad-block);
+        margin-block: calc(-1 * var(--pad-block));
+        background: color-mix(
+          in oklab,
+          color-mix(in oklab, #fbe9d4, #f1e2d0 calc(var(--p) * 100%)) calc(var(--p) * 100%),
+          transparent
+        );
+        /* The shine: brightest mid-change, gone at rest, so it only lives on
+           the wave front, and it runs along the outline with it. */
+        --shine: color-mix(in oklab, #d4953f calc(min(var(--p), 1 - var(--p)) * 200%), transparent);
+        box-shadow:
+          inset 0 1.5px var(--shine),
+          inset 0 -1.5px var(--shine);
+      }
+      .about-links .button .animate-text-weight-unit:first-child {
+        padding-inline-start: var(--pad-inline);
+        margin-inline-start: calc(-1 * var(--pad-inline));
+      }
+      .about-links .button .animate-text-weight-unit:last-child {
+        padding-inline-end: var(--pad-inline);
+        margin-inline-end: calc(-1 * var(--pad-inline));
+      }
+      /*
+       * The link: black, and brown when on (coffee). The text color is the
+       * script's own color pair; the line is one piece per character, in
+       * currentColor, so it browns with its letter. As the wave passes, each
+       * piece dips and swells, so a ripple runs along the line: 0.5px at half
+       * opacity at rest, 2px mid-change, 1px and solid when on.
+       */
+      .about-links a:not(.button) {
+        --animate-weight-to: 600;
+        --animate-weight-color-from: #1c1c1c;
+        --animate-weight-color-to: #6f4e37;
+      }
+      .about-links a:not(.button) .animate-text-weight-unit {
+        --p: clamp(0, var(--animate-weight-progress), 1);
+        position: relative;
+      }
+      .about-links a:not(.button) .animate-text-weight-unit::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0.02em;
+        height: 1px;
+        background: currentColor;
+        opacity: calc(0.5 + 0.5 * var(--p));
+        transform-origin: bottom;
+        /* Thickness in px: the curve through 0.5, 2 and 1 at progress 0, ½ and 1. */
+        transform: translateY(calc(min(var(--p), 1 - var(--p)) * 8px))
+          scaleY(calc(0.5 + 5.5 * var(--p) - 5 * var(--p) * var(--p)));
+      }
+      /* In the sandbox: every control but the size. */
+      .sandbox-links a {
+        font-family: var(--font, "Outfit"), sans-serif;
+      }
+      .page-section > h4 {
+        margin: 32px 0 8px;
+        font-size: 20px;
+      }
+      .page-section > h5 {
+        margin: 24px 0 8px;
+        font-size: 16px;
+      }
+      /* A list set like the controls: one row each, a rule between them. */
+      .rows {
+        margin: 0 0 16px;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .rows > li {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .page-section > p {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+      /* No highlighter and no dependency for it: a plain monospace block. */
+      .page-section pre {
+        font-family: ui-monospace, monospace;
+        font-size: 14px;
+        background: #f4f4f4;
+        margin: 0 0 16px;
+        padding: 12px 16px;
+        overflow-x: auto;
+      }
+      /* The README picture, made by scripts/compare.mjs at 2x. */
+      .compare {
+        display: block;
+        width: 100%;
+        margin: 0 0 16px;
+      }
+      /* The reference tables: text wraps, names do not. */
+      .doc {
+        margin: 0 0 16px;
+        color: var(--muted);
+      }
+      .doc th,
+      .doc td {
+        white-space: normal;
+        vertical-align: top;
+      }
+      .doc th:first-child {
+        width: auto;
+        max-width: none;
+      }
+      .doc td:first-child {
+        white-space: nowrap;
+      }
+      /* The last one, so there is still page left to scroll it out of view by. */
+      #sec-foobar {
+        padding-bottom: 24px;
+      }
+      /* The room to scroll it out of view by, with the way back at its foot. */
+      #sec-foobar > .label {
+        margin-top: 50vh;
+      }
+      .foobar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 24px;
+      }
+      .foobar img {
+        width: 320px;
+        max-width: 100%;
+      }
+      .foobar p {
+        font-family: "Comic Sans MS", "Comic Sans", cursive;
+        font-size: 28px;
+        color: #1c1c1c;
+      }
     </style>
   </head>
   <body>
-    <h1>animateTextWeight Demo</h1>
+    <h1 id="top">animateTextWeight.js Demo</h1>
 
-    <!-- Controls: label left, control right, 20/80. -->
-    <h2>Controls</h2>
-    <div class="controls">
-      <h3>Animation</h3>
+    <div class="trace" id="trace" hidden>
+      <div class="trace-tools">
+        <button type="button" id="trace-clear" title="Throw away every crossing so far">✕ clear</button>
+        <button type="button" id="trace-copy" title="Copy every crossing still on show, as JSON">⧉ copy</button>
+        <button type="button" id="trace-follow" aria-pressed="false" title="Carry the last crossing beside the cursor">
+          ◎ cursor
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th class="wide" title="The element the pointer crossed">element</th>
+            <th title="in on entering it, out on leaving it">io</th>
+            <th title="Which half of the element the pointer was in">side</th>
+            <th title="The end of the text the script aimed the wave at">wave from</th>
+            <th class="num" title="Where the pointer was, in page pixels">x</th>
+            <th class="num" title="Where the element's middle is, in page pixels">mid</th>
+            <th
+              class="num wide"
+              title="progress: how far the first letter has come, and the last one, read back off the page a moment after the crossing. 0 is light, 1 is bold.&#10;&#10;How to read it: does the last number fall or rise?&#10;0.31.. 0.00 falls, so the wave is coming from the left.&#10;0.00.. 0.31 rises, so it is coming from the right.&#10;&#10;Green when that matches the end the script aimed at, red when it does not."
+            >
+              progress
+            </th>
+          </tr>
+        </thead>
+        <tbody id="trace-rows"></tbody>
+      </table>
+    </div>
+    <dl class="trace-cursor" id="trace-cursor" hidden></dl>
 
-      <label for="font-url">Font</label>
-      <div>
-        <div class="examples" id="examples"></div>
-        <input type="url" id="font-url" value="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" />
-        <p class="hint">
-          A Google Fonts CSS URL. Pick a font at
-          <a href="https://fonts.google.com/?categoryFilters=Technology:%2FTechnology%2FVariable" target="_blank">Google Fonts, variable only</a>,
-          then paste the URL from its embed code.
+    <div class="page">
+      <nav class="page-nav">
+        <a href="#sec-about">About</a>
+        <a href="#sec-sandbox">Sandbox</a>
+        <a href="#sec-use">Use</a>
+        <a href="#sec-extras">Extras</a>
+        <a href="#sec-under-the-hood">Under the hood</a>
+        <a href="#sec-thanks">Thanks</a>
+        <a href="#sec-foobar">Foobar</a>
+      </nav>
+
+      <section class="page-section" id="sec-about">
+        <h3>About</h3>
+        <p>
+          Use this for headlines, buttons and navigations to create stunning typographic animations. It animates the
+          font-weight of a variable font while keeping the overall width so things don't randomly shift around.
         </p>
-      </div>
+        <img
+          class="compare"
+          src="compare.png"
+          alt="SIMPLY LOVELY at weight 100 and 900 with animateTextWeight, both lines end at the same green line. UGLY INCHIDENT with plain CSS font-weight, the bold line ends far past the light one, the gap marked in red."
+        />
+        <p>
+          A variable font gets wider as it gets bolder. If you animate <code>font-weight</code> on its own, each line
+          grows as the weight goes up, and the text around it moves. animateTextWeight measures each rendered line at the
+          start and end weight and 9 steps between. At each of them it holds the line at its start width: with
+          letter-spacing in line mode, and with the width of each character box in character mode.
+        </p>
+        <div class="links about-links">
+          <a class="button" href="https://github.com/timschoch/animateTextWeight" target="_blank">View on GitHub</a>
+          <a href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk" target="_blank">Buy me a coffee</a>
+        </div>
+      </section>
 
-      <label for="from">Weight</label>
-      <div>From <select id="from"></select> to <select id="to"></select></div>
+      <section class="page-section" id="sec-sandbox">
+        <h3>Sandbox</h3>
+        <div class="sandbox">
+          <div class="sandbox-example">
+            <div class="sample" id="preview"></div>
+            <div class="label">(hover to see animation)</div>
+            <div class="links sandbox-links">
+              <a class="button" href="#sec-sandbox">A button</a>
+              <a href="#sec-sandbox">A text link</a>
+            </div>
+          </div>
 
-      <label for="by">Animate by</label>
-      <div>
-        <select id="by">
-          <option value="line" selected>line</option>
-          <option value="character">character</option>
-        </select><br>
-        <span class="label">by character, every line starts its wave at the same moment and runs to the right</span>
-      </div>
+        <!-- Controls: label left, control right, 20/80. -->
+        <div class="controls">
+          <label for="font-url">Font</label>
+          <div>
+            <div class="examples" id="examples"></div>
+            <input type="url" id="font-url" value="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" />
+            <p class="hint">
+              Pick any <strong>variable</strong> font at
+              <a href="https://fonts.google.com/?categoryFilters=Technology:%2FTechnology%2FVariable" target="_blank">Google Fonts</a>,
+              then paste the URL from its embed code.
+            </p>
+          </div>
 
-      <label for="delay">Delay</label>
-      <div><input type="range" id="delay" min="0" max="200" step="5" value="0" /> <input type="number" step="5" value="0" /> ms<br>
-        <span class="label">how long one unit waits after the one before it</span>
-      </div>
+          <label for="from">Weight</label>
+          <div>From <select id="from"></select> to <select id="to"></select></div>
 
-      <label for="size">Size</label>
-      <div><input type="range" id="size" min="12" max="200" step="4" value="60" /> <input type="number" value="60" /> px</div>
+          <label for="by">Animate by</label>
+          <div>
+            <select id="by">
+              <option value="line">line</option>
+              <option value="character" selected>character</option>
+            </select>
+          </div>
 
-      <div class="full">
-        <div class="sample" id="preview"></div>
-        <div class="label">(hover to see animation)</div>
-      </div>
+          <label for="direction">Direction</label>
+          <div>
+            <select id="direction">
+              <option value="start">start</option>
+              <option value="end">end</option>
+              <option value="pointer" selected>pointer</option>
+              <option value="scroll">scroll</option>
+              <option value="pointer scroll">pointer scroll</option>
+            </select><br>
+            <dl class="label states">
+              <dt>start</dt>
+              <dd>the wave starts where the text starts (needs a delay)</dd>
+              <dt>end</dt>
+              <dd>it starts where the text ends</dd>
+              <dt>pointer</dt>
+              <dd>the side the mouse crossed: come in from the left and it runs left to right, from the right and it runs right to left. By line: the top or the bottom</dd>
+              <dt>scroll</dt>
+              <dd>the way the page last moved: down starts at the start, up at the end. Scroll through the sections to see it</dd>
+              <dt>pointer scroll</dt>
+              <dd>both, whichever triggered last wins (useful for sticky navs)</dd>
+            </dl>
+          </div>
 
-      <h3>Other settings</h3>
+          <label for="delay">Delay</label>
+          <div><input type="range" id="delay" min="0" max="200" step="5" value="10" /> <input type="number" step="5" value="10" /> ms<br>
+            <span class="label">how long one unit waits after the one before it (character: 5-20ms, line: 100ms+)</span>
+          </div>
 
-      <label for="source">Text</label>
-      <div><div class="source" id="source" contenteditable="true">WORKSHOP<br />Rapid Prototyping Week</div></div>
+          <label for="duration">Duration</label>
+          <div><input type="range" id="duration" min="0" max="2000" step="50" value="300" /> <input type="number" step="50" value="300" /> ms<br>
+            <span class="label">how long one unit takes from one weight to the other</span>
+          </div>
 
-      <label for="spacing">Spacing</label>
-      <div><input type="range" id="spacing" min="-5" max="10" step="0.1" value="0" /> <input type="number" step="0.1" value="0" /> px<br>
-        <span class="label">the spacing you want the <i>from</i> state to have, applied in your css file</span>
-      </div>
+          <label for="size">Size</label>
+          <div><input type="range" id="size" min="12" max="200" step="4" value="60" /> <input type="number" value="60" /> px</div>
 
-      <label for="width">Container width</label>
-      <div><input type="range" id="width" min="300" max="1200" step="50" value="800" /> <input type="number" value="800" /> px</div>
+          <label for="case">Transform</label>
+          <div>
+            <select id="case">
+              <option value="uppercase" selected>caps</option>
+              <option value="none">normal</option>
+            </select>
+          </div>
+
+          <label for="color">Color</label>
+          <div>
+            <select id="color">
+              <option value="off" selected>off</option>
+              <option value="on">on</option>
+            </select>
+            <span id="color-ends" hidden>from <input type="color" id="color-from" value="#1c1c1c" /> to <input type="color" id="color-to" value="#c8102e" /></span>
+          </div>
+
+          <h4 class="controls-group">Sandbox only</h4>
+
+          <label for="source">Text</label>
+          <div><div class="source" id="source" contenteditable="true">WORKSHOP<br />Rapid Prototyping Week</div></div>
+
+          <label for="spacing">Spacing</label>
+          <div><input type="range" id="spacing" min="-5" max="10" step="0.1" value="0" /> <input type="number" step="0.1" value="0" /> px<br>
+            <span class="label">default spacing for your titles.</span>
+          </div>
+
+          <label for="width">Container width</label>
+          <div><input type="range" id="width" min="300" max="1200" step="50" value="800" /> <input type="number" value="800" /> px</div>
+        </div>
+        </div>
+      </section>
+
+      <section class="page-section" id="sec-use">
+        <h3>Use</h3>
+        <p>Install it from npm.</p>
+        <pre class="language-bash">npm install animate-text-weight</pre>
+        <p>Add it to your website or web app.</p>
+        <pre class="language-js">import "animate-text-weight/style.css";
+import { init } from "animate-text-weight";
+
+init();
+
+// If your bundler does not handle CSS imports, link `node_modules/animate-text-weight/src/animateTextWeight.css` directly.</pre>
+        <p>Add your CSS styling.</p>
+        <pre class="language-css">@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&amp;display=swap");
+
+.nav a {
+  font-family: "Outfit", sans-serif; /* a variable font */
+  --animate-weight-from: 300;
+  --animate-weight-to: 700;
+}
+
+.nav a:hover {
+  --animate-weight: true;
+}</pre>
+        <p>The script then wraps each line in a span. On hover that span animates from 300 to 700 and keeps its width.</p>
+        <pre class="language-html">&lt;a href="/"&gt;Foobar&lt;/a&gt;
+
+&lt;!-- becomes --&gt;
+&lt;a href="/"&gt;
+  &lt;span class="animate-text-weight-line animate-text-weight-unit"&gt;Foobar&lt;/span&gt;
+&lt;/a&gt;</pre>
+        <h4>CSS</h4>
+        <p>Every available option:</p>
+        <pre class="language-css">.nav a {
+  font-family: "Outfit", sans-serif;
+  --animate-weight-from: 300;
+  --animate-weight-to: 700;
+  --animate-weight-by: character;
+  --animate-weight-delay: 20ms;
+  --animate-weight-direction: pointer;
+  --animate-weight-duration: 300ms;
+  --animate-weight-easing: linear;
+  --animate-weight-color-from: #1c1c1c;
+  --animate-weight-color-to: #6f4e37;
+}</pre>
+        <p>
+          Then turn the animation on with <code>--animate-weight: true</code>, on the element itself or on any ancestor:
+        </p>
+        <pre class="language-css">/* animate all elements that have a --animate-weight-to */
+.nav {
+  --animate-weight: true;
+}
+
+/* or turn on specific elements only */
+.nav a:hover,
+.nav a[aria-current="page"] {
+  --animate-weight: true;
+}</pre>
+        <p>
+          The animation is shown if <code>--animate-weight-to</code> is set and differs from its current weight (vanilla
+          <code>font-weight</code> or <code>--animate-weight-from</code>).
+        </p>
+        <p>
+          Set it on the element that holds the text itself. In <code>&lt;a&gt;&lt;span&gt;Home&lt;/span&gt;&lt;/a&gt;</code>,
+          set it on the <code>span</code>, not the <code>a</code>.
+        </p>
+        <p>
+          Plain <code>letter-spacing</code> works and is kept. So do <code>text-transform</code>, <code>text-align</code>
+          (except <code>justify</code>), <code>font-variant</code>, <code>font-feature-settings</code>, right-to-left text and <code>vw</code> font sizes.
+        </p>
+        <table class="doc">
+          <tr><th>Property</th><th>Value</th><th>Default</th><th>Required</th></tr>
+          <tr><td><code>--animate-weight-from</code></td><td>Weight at rest.</td><td>The element's <code>font-weight</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-to</code></td><td>Weight when on.</td><td>none</td><td>yes</td></tr>
+          <tr><td><code>--animate-weight</code></td><td><code>true</code> or <code>false</code>. Inherited, so an ancestor can set it.</td><td><code>false</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-by</code></td><td><code>line</code> animates each line as one unit. <code>character</code> animates each character on its own.</td><td><code>line</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-delay</code></td><td>How long each unit waits after the one before it. Use it with <code>character</code> for a wave across the text, or with <code>line</code> for a wave down a block. Start with 5-20ms by character, 100ms+ by line.</td><td><code>0s</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-direction</code></td><td>Where the wave starts. See below.</td><td><code>start</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-duration</code></td><td>How long one unit takes to go from one weight to the other. With <code>prefers-reduced-motion: reduce</code>, duration and delay are set to <code>0s</code> and the weight changes at once.</td><td><code>300ms</code></td><td>no</td></tr>
+          <tr><td><code>--animate-weight-easing</code></td><td>Timing function of the wave.</td><td><code>linear</code></td><td>no</td></tr>
+        </table>
+        <h5><code>--animate-weight-direction</code></h5>
+        <table class="doc">
+          <tr><th>Value</th><th>Wave starts at ...</th></tr>
+          <tr><td><code>start</code></td><td>the start of the text. In right-to-left text that is the right side. In line mode it is the first line.</td></tr>
+          <tr><td><code>end</code></td><td>the other end.</td></tr>
+          <tr><td><code>pointer</code></td><td>the side the pointer came in from, and the weight goes back from the side the pointer left by. The pointer only sets the direction. You still need <code>--animate-weight: true</code> on <code>:hover</code> or another state to turn it on.</td></tr>
+          <tr><td><code>scroll</code></td><td>the start when the page scrolls down, and the end when it scrolls up.</td></tr>
+          <tr><td><code>pointer scroll</code></td><td>whichever of the two moved last.</td></tr>
+        </table>
+        <h5>Markup</h5>
+        <p>
+          The script splits the element into one span per line, and in character mode into one span per character.
+          Inline styles are left out here:
+        </p>
+        <pre class="language-html">&lt;!-- before --&gt;
+&lt;a&gt;Foobar&lt;/a&gt;
+
+&lt;!-- by line --&gt;
+&lt;a&gt;
+  &lt;span class="animate-text-weight-line animate-text-weight-unit"&gt;Foobar&lt;/span&gt;
+&lt;/a&gt;
+
+&lt;!-- by character --&gt;
+&lt;a&gt;
+  &lt;span class="animate-text-weight-line"&gt;
+    &lt;span class="animate-text-weight-char animate-text-weight-unit"&gt;F&lt;/span&gt;
+    &lt;span class="animate-text-weight-char animate-text-weight-unit"&gt;o&lt;/span&gt;
+    &lt;span class="animate-text-weight-char animate-text-weight-unit"&gt;o&lt;/span&gt;
+    ...
+  &lt;/span&gt;
+&lt;/a&gt;</pre>
+        <p>Lines are fixed after measuring. They can get wider or narrower but do not rewrap until the next measurement.</p>
+        <h5>Known limitations</h5>
+        <ul class="rows">
+          <li>
+            Two weights only per element: from and to. A third state, like rest, hover and active, is not possible yet. PRs
+            welcome.
+          </li>
+          <li>Needs a variable font. Static fonts only have fixed weights, so the text jumps from one weight to the next.</li>
+          <li>Character mode drops ligatures.</li>
+          <li>Line mode on long body text jitters in Firefox.</li>
+          <li><code>font-variation-settings</code> with <code>"wght"</code> overrides the weight, so nothing animates. Use <code>font-weight</code>.</li>
+          <li><code>text-align: justify</code> loses its stretch, because lines are fixed after measuring.</li>
+        </ul>
+        <h4>JavaScript</h4>
+        <h5>On page load</h5>
+        <p>
+          This is enough for most pages. Call it once. It waits for the fonts, measures every animated element on the
+          page, and measures them again when the window width changes.
+        </p>
+        <pre class="language-js">init();</pre>
+        <h5>Text added or changed after load</h5>
+        <p>Measure the element again after you add it or replace its text.</p>
+        <pre class="language-js">const link = document.createElement("a");
+link.textContent = "Foobar";
+nav.append(link);
+calibrate(link);</pre>
+        <h5>New view in a single-page app</h5>
+        <p>Measure everything under the new view's root. Those elements are measured again on resize too.</p>
+        <pre class="language-js">calibrateAll(document.querySelector("main"));</pre>
+        <h5>Known limitations</h5>
+        <ul class="rows">
+          <li>
+            The script measures again only when the window width changes. After a new font size, a new container width,
+            a new window height with <code>vh</code> font sizes or a font that loads late, call <code>calibrate(element)</code>.
+          </li>
+        </ul>
+      </section>
+
+      <section class="page-section" id="sec-extras">
+        <h3>Extras</h3>
+        <h4>Color</h4>
+        <p>
+          Set <code>--animate-weight-color-from</code> or <code>--animate-weight-color-to</code> to change color along
+          with the weight. If you omit one or the other, it falls back to <code>currentColor</code> and uses whatever
+          color your own CSS already applies to that text:
+        </p>
+        <pre class="language-css">.nav a {
+  --animate-weight-color-from: #1c1c1c;
+  --animate-weight-color-to: #c8102e;
+}</pre>
+        <p>The color follows each unit's weight, so it uses the same duration, easing, delay, and direction.</p>
+        <h4>Animate other properties</h4>
+        <p>
+          Each <code>span.animate-text-weight-unit</code> has the CSS variable <code>--animate-weight-progress</code>, which
+          goes from <code>0</code> at <code>--animate-weight-from</code> to <code>1</code> at
+          <code>--animate-weight-to</code>. Use it in any CSS property to sync that property to the weight animation:
+        </p>
+        <pre class="language-css">/* change opacity from 60% to 100% */
+.nav a .animate-text-weight-unit {
+  opacity: calc(0.6 + 0.4 * var(--animate-weight-progress));
+}</pre>
+        <p>
+          The CSS variable is set on the unit and is not inherited. Make sure to target <code>.animate-text-weight-unit</code>
+          itself, not the original element (<code>.nav a</code>). In character mode each character has its own
+          <code>span.animate-text-weight-unit</code> with its own value.
+        </p>
+        <h4>Sticky one page navs</h4>
+        <p>
+          An optional extra marks the nav link of the section in the middle of the screen with
+          <code>aria-current="true"</code>. A jump passes every section in between, one at a time, so one wave runs
+          through the nav. Each step waits until the wave has crossed that link: <code>--animate-weight-delay</code> once
+          per unit.
+        </p>
+        <pre class="language-js">import { waveNav } from "animate-text-weight/wave-nav";
+
+waveNav(document.querySelectorAll(".nav a"));</pre>
+        <pre class="language-css">.nav a[aria-current="true"] {
+  --animate-weight: true;
+}</pre>
+        <p>
+          Each link's section is the element its <code>href="#id"</code> names. Pass
+          <code>{ linkClass: "active" }</code> or <code>{ sectionClass: "active" }</code> to also toggle a class on
+          the current link or its section.
+          <code>waveNav</code> returns a <code>stop()</code> function that removes its listeners.
+        </p>
+      </section>
+
+      <section class="page-section" id="sec-under-the-hood">
+        <h3>Under the hood</h3>
+        <h4>Measurements</h4>
+        <div id="measurements"></div>
+        <div class="label"><b>Difference in px</b> to the <i>from-weight</i> width, per line and weight</div>
+        <table id="log"></table>
+        <h4>Without corrections</h4>
+        <div class="label">The bare font, <span id="scale-range"></span> at 60px: this is the shifting the script cancels</div>
+        <div class="scale" id="scale"></div>
+      </section>
+
+      <section class="page-section" id="sec-thanks">
+        <h3>Thanks</h3>
+        <p>Thanks for using animateTextWeight.</p>
+        <p>
+          It is free under the
+          <a href="https://github.com/timschoch/animateTextWeight/blob/main/LICENSE" target="_blank">MIT license</a>: use
+          it in any project, personal or commercial, change it and share it. Keep the license text with the code. It
+          comes with no warranty.
+        </p>
+        <p>
+          Found a bug or want a feature?
+          <a href="https://github.com/timschoch/animateTextWeight/issues" target="_blank">Open an issue</a> or, better,
+          send a pull request.
+        </p>
+        <p>
+          If you appreciate the typographic beauty of animated text that doesn't break your design,
+          <a href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk" target="_blank">buy me a coffee</a>.
+        </p>
+        <p>
+          I really enjoy seeing other designers' work and appreciate it if you
+          <a href="mailto:tim@timschoch.com">send me a link to any project that uses animateTextWeight</a>.
+        </p>
+      </section>
+
+      <section class="page-section" id="sec-foobar">
+        <h3>Foobar</h3>
+        <div class="foobar">
+          <img src="rickroll.png" alt="yes, im that old to find this funny. I wish you a wonderful day :)" />
+          <p>
+            Never gonna shift your line<br />
+            Never gonna push you wide<br />
+            Never gonna reflow and desert you<br />
+            Never gonna wrap a word<br />
+            Never gonna jump a break<br />
+            Never gonna track too tight and hurt you
+          </p>
+        </div>
+        <div class="label"><a href="#top">scroll to the top of the page</a></div>
+      </section>
     </div>
 
-    
-    <h2>Measurements</h2>
-    <div id="measurements"></div>
-    <div class="label"><b>Difference in px</b> to the <i>from-weight</i> width, per line and weight</div>
-    <table id="log"></table>
-
-    <h2>Without corrections</h2>
-    <div class="label">The bare font, <span id="scale-range"></span> at 60px: this is the shifting the script cancels</div>
-    <div class="scale" id="scale"></div>
-
+    <script type="module">
+      // The core and the four languages the examples use, not the full bundle.
+      const cdn = "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es";
+      const { default: hljs } = await import(`${cdn}/core.min.js`);
+      for (const name of ["bash", "css", "javascript", "xml"]) {
+        hljs.registerLanguage(name, (await import(`${cdn}/languages/${name}.min.js`)).default);
+      }
+      document.querySelectorAll("pre[class^=language-]").forEach((pre) => hljs.highlightElement(pre));
+    </script>
     <script type="module">
       // Run `npm run build` first: the page imports the built script.
       import { calibrate, LINE, UNIT } from "../dist/index.js";
+      import { waveNav } from "../dist/wave-nav.js";
 
       const $ = (id) => document.getElementById(id);
       const source = $("source");
@@ -337,12 +1179,33 @@
       const measurements = $("measurements");
       const log = $("log");
       const sliders = ["width", "size", "spacing"].map($);
-      const fields = sliders.map((s) => s.nextElementSibling);
+      const fields = sliders.map((slider) => slider.nextElementSibling);
       const selects = ["from", "to"].map($);
+      /**
+       * The from and to weights last picked by hand, kept apart from the lists.
+       * Only a new font reads them, to preselect the nearest weight it has;
+       * everything else reads the lists.
+       */
+      const picked = [null, null];
       const fontUrl = $("font-url");
 
-      // Read by CSS only, so changing it needs no new measurement.
-      const setDelay = () => preview.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
+      /**
+       * Both colors or neither: off leaves the two properties unset, the way
+       * a page that wants no color does.
+       *
+       * Told which elements to write on, because the control speaks for every
+       * demo on the page and not only the sandbox. The nav and the headings
+       * animate the same way and were the only ones left out of it.
+       */
+      const setColor = (...elements) => {
+        const on = $("color").value === "on";
+        for (const element of elements)
+          for (const end of ["from", "to"]) {
+            const name = `--animate-weight-color-${end}`;
+            if (on) element.style.setProperty(name, $(`color-${end}`).value);
+            else element.style.removeProperty(name);
+          }
+      };
 
       /** Family name from a Google Fonts CSS URL: family=Lora:ital,wght@... -> Lora. */
       const familyOf = (url) => new URL(url).searchParams.get("family")?.split(":")[0] ?? "";
@@ -352,7 +1215,7 @@
         "Outfit:wght@100..900",
         "Aleo:ital,wght@0,100..900;1,100..900",
         "Lora:ital,wght@0,400..700;1,400..700",
-        "Montserrat:ital,wght@0,100..900;1,100..900",
+        "Montserrat:wght@100..900",
         "Mozilla+Headline:wght@200..700",
         "Playwrite+DE+LA:wght@100..400",
       ];
@@ -374,8 +1237,8 @@
       /** Mark the button of the loaded URL; make one first if none has it. */
       function selectButton(url) {
         const buttons = [...$("examples").querySelectorAll("button")];
-        const own = buttons.find((b) => b.dataset.url === url) ?? addButton(url, true);
-        for (const b of buttons) b.setAttribute("aria-pressed", "false");
+        const own = buttons.find((button) => button.dataset.url === url) ?? addButton(url, true);
+        for (const button of buttons) button.setAttribute("aria-pressed", "false");
         own.setAttribute("aria-pressed", "true");
       }
       for (const spec of examples) addButton(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
@@ -401,12 +1264,17 @@
       /** The from and to lists and the drift scale, for one weight range. */
       function buildRange({ min, max }) {
         const weights = [];
-        for (let w = Math.ceil(min / 100) * 100; w <= max; w += 100) weights.push(w);
+        for (let weight = Math.ceil(min / 100) * 100; weight <= max; weight += 100) weights.push(weight);
         if (weights[0] !== min) weights.unshift(min);
         if (weights.at(-1) !== max) weights.push(max);
-        for (const [i, sel] of selects.entries()) {
+        // What was picked by hand, or the nearest this font has. Both landing on
+        // one weight would animate nothing, so then the whole range instead.
+        const nearest = (want) => weights.reduce((closest, weight) => (Math.abs(weight - want) < Math.abs(closest - want) ? weight : closest));
+        let chosen = [nearest(picked[0] ?? min), nearest(picked[1] ?? max)];
+        if (chosen[0] === chosen[1]) chosen = [min, max];
+        for (const [index, sel] of selects.entries()) {
           sel.replaceChildren();
-          for (const w of weights) sel.add(new Option(w, w, false, w === (i ? max : min)));
+          for (const weight of weights) sel.add(new Option(weight, weight, false, weight === chosen[index]));
         }
         $("scale-range").textContent = `${min} to ${max}`;
         const live = document.createElement("div");
@@ -415,11 +1283,11 @@
         live.style.setProperty("--to", max);
         live.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${min} to ${max}, hover</span>`;
         $("scale").replaceChildren(live);
-        for (const w of weights) {
+        for (const weight of weights) {
           const block = document.createElement("div");
           block.className = "block";
-          block.style.setProperty("--weight", w);
-          block.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${w}</span>`;
+          block.style.setProperty("--weight", weight);
+          block.innerHTML = `<p>Rapid Prototyping Week</p><span class="tag">${weight}</span>`;
           $("scale").append(block);
         }
       }
@@ -437,7 +1305,7 @@
             update();
           });
         link.href = url;
-        document.documentElement.style.fontFamily = `"${family}", sans-serif`;
+        document.documentElement.style.setProperty("--font", `"${family}"`);
       }
 
       /** The easing set on the preview, as a function of time 0 to 1. */
@@ -449,135 +1317,481 @@
         // Newton on the x curve, then read y. Eight rounds is plenty at this size.
         const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
         const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
-        return (x) => {
-          let t = x;
-          for (let i = 0; i < 8; i++) {
-            const slope = (3 * ax * t + 2 * bx) * t + cx;
+        return (time) => {
+          let parameter = time;
+          for (let round = 0; round < 8; round++) {
+            const slope = (3 * ax * parameter + 2 * bx) * parameter + cx;
             if (Math.abs(slope) < 1e-6) break;
-            t -= (((ax * t + bx) * t + cx) * t - x) / slope;
+            parameter -= (((ax * parameter + bx) * parameter + cx) * parameter - time) / slope;
           }
-          return ((ay * t + by) * t + cy) * t;
+          return ((ay * parameter + by) * parameter + cy) * parameter;
         };
       }
 
       /** Every unit at the same progress: one stop, the way a rest state looks. */
-      function stop(units, k, n) {
-        for (const u of units) u.style.setProperty("--animate-weight-progress", (k / (n - 1)).toFixed(4));
+      function stop(units, index, count) {
+        for (const unit of units) unit.style.setProperty("--animate-weight-progress", (index / (count - 1)).toFixed(4));
       }
 
       /**
-       * One moment of the wave, sample k of n: every unit at its own progress,
+       * One moment of the wave, sample `index` of `count`: every unit at its own progress,
        * worked out from the duration, the delay and the easing, the way the css
        * does it.
        */
-      function wave(units, k, n) {
-        const ms = (name) => {
-          const v = getComputedStyle(preview).getPropertyValue(name).trim();
-          return parseFloat(v) * (v.endsWith("ms") ? 1 : 1000);
-        };
-        const duration = ms("--animate-weight-duration");
-        const delay = ms("--animate-weight-delay");
+      function wave(units, index, count) {
+        const ms = (value) => parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000);
+        const duration = ms(getComputedStyle(preview).getPropertyValue("--animate-weight-duration"));
         const ease = easing();
-        const counts = units.map((u) => Number(u.style.getPropertyValue("--atw-delay-count")) || 0);
-        const t = ((duration + Math.max(...counts, 0) * delay) * k) / (n - 1);
-        units.forEach((u, i) => {
-          const p = Math.min(Math.max((t - counts[i] * delay) / duration, 0), 1);
-          u.style.setProperty("--animate-weight-progress", ease(p).toFixed(4));
+        // Each unit's wait as the browser worked it out, read off the live
+        // preview: the clones have their transition switched off, and the
+        // direction is already in this number.
+        const live = [...preview.querySelectorAll(`.${UNIT}`)];
+        const delays = units.map((_, unitIndex) => ms(getComputedStyle(live[unitIndex]).transitionDelay));
+        const elapsed = ((duration + Math.max(...delays, 0)) * index) / (count - 1);
+        units.forEach((unit, unitIndex) => {
+          const progress = Math.min(Math.max((elapsed - delays[unitIndex]) / duration, 0), 1);
+          unit.style.setProperty("--animate-weight-progress", ease(progress).toFixed(4));
         });
       }
 
-      /** n copies of the preview stacked, each frozen by freeze(). */
-      function onion(label, n, freeze) {
+      /** `count` copies of the preview stacked, each frozen by freeze(). */
+      function onion(label, count, freeze) {
         const box = document.createElement("div");
         box.className = "onion";
         box.dataset.label = label;
-        for (let k = 0; k < n; k++) {
-          const c = preview.cloneNode(true);
-          c.removeAttribute("id");
-          const units = [...c.querySelectorAll(`.${UNIT}`)];
-          for (const u of units) u.style.transition = "none";
-          freeze(units, k, n);
-          box.append(c);
+        for (let index = 0; index < count; index++) {
+          const clone = preview.cloneNode(true);
+          clone.removeAttribute("id");
+          const units = [...clone.querySelectorAll(`.${UNIT}`)];
+          for (const unit of units) unit.style.transition = "none";
+          freeze(units, index, count);
+          box.append(clone);
         }
         measurements.append(box);
       }
 
       function update() {
-        const [width, size, spacing] = fields.map((f) => Number(f.value));
+        const [width, size, spacing] = fields.map((field) => Number(field.value));
         document.documentElement.style.setProperty("--w", `${width}px`);
         document.documentElement.style.setProperty("--s", `${size}px`);
+        // Caps change every width, so everything animated measures again.
+        document.documentElement.style.setProperty("--case", $("case").value);
+        for (const element of document.querySelectorAll("h1, .about-links a")) calibrate(element);
         preview.innerText = source.innerText; // innerText keeps a typed line break as <br>
         preview.style.letterSpacing = `${spacing}px`; // set from outside, like a site would
         preview.style.fontWeight = selects[0].value;
         preview.style.setProperty("--animate-weight-to", selects[1].value);
         preview.style.setProperty("--animate-weight-by", $("by").value);
+        preview.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
+        preview.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
+        setColor(preview); // before the clones below, so they carry it
+        preview.style.setProperty("--animate-weight-direction", $("direction").value);
+        buildPage();
 
         // The script splits the preview into line spans and writes each
         // line's spacing. Then one frozen clone per stop, so every line
         // should end where it ends at the from weight.
-        const r = calibrate(preview);
-        if (!r) return;
+        const calibration = calibrate(preview);
+        if (!calibration) return;
         measurements.replaceChildren();
-        onion("every stop", r.weights.length, stop);
+        onion("every stop", calibration.weights.length, stop);
         onion("during the wave", 24, wave);
         const offBy = new Map(); // stop -> per line, px
-        r.weights.forEach((w, k) => {
-          const c = preview.cloneNode(true);
-          c.removeAttribute("id");
-          c.className = "probe";
-          c.dataset.label = Math.round(w);
-          measurements.append(c);
+        calibration.weights.forEach((weight, index) => {
+          const probe = preview.cloneNode(true);
+          probe.removeAttribute("id");
+          probe.className = "probe";
+          probe.dataset.label = Math.round(weight);
+          measurements.append(probe);
           // Freeze every unit at this stop, then read the lines that hold them.
-          const at = k / (r.weights.length - 1);
-          for (const u of c.querySelectorAll(`.${UNIT}`)) {
-            u.style.transition = "none";
-            u.style.setProperty("--animate-weight-progress", at);
+          const at = index / (calibration.weights.length - 1);
+          for (const unit of probe.querySelectorAll(`.${UNIT}`)) {
+            unit.style.transition = "none";
+            unit.style.setProperty("--animate-weight-progress", at);
           }
-          const spans = [...c.querySelectorAll(`.${LINE}`)];
-          offBy.set(w, spans.map((s, i) => s.getBoundingClientRect().width - r.lines[i].target));
+          const spans = [...probe.querySelectorAll(`.${LINE}`)];
+          offBy.set(weight, spans.map((span, lineIndex) => span.getBoundingClientRect().width - calibration.lines[lineIndex].target));
         });
 
         // One row per line: how far off its from-weight width it is, at each stop.
         log.innerHTML =
-          `<tr><th>line</th>${r.weights.map((w) => `<th class="num">${Math.round(w)}</th>`).join("")}</tr>` +
-          r.lines
+          `<tr><th>line</th>${calibration.weights.map((weight) => `<th class="num">${Math.round(weight)}</th>`).join("")}</tr>` +
+          calibration.lines
             .map(
-              (line, i) =>
+              (line, index) =>
                 `<tr><td class="line" title="${line.text}">${line.text}</td>` +
-                r.weights.map((w) => `<td class="num">${offBy.get(w)[i].toFixed(2)}</td>`).join("") +
+                calibration.weights.map((weight) => `<td class="num">${offBy.get(weight)[index].toFixed(2)}</td>`).join("") +
                 `</tr>`,
             )
             .join("");
       }
 
-      /** Keep a slider and its number field in step, and run f on every change. */
-      function link(slider, field, f) {
+      /** Keep a slider and its number field in step, and run onChange on every change. */
+      function link(slider, field, onChange) {
         slider.addEventListener("input", () => {
           field.value = slider.value;
-          f();
+          onChange();
         });
         field.addEventListener("input", () => {
           slider.value = field.value;
-          f();
+          onChange();
         });
         // Double click on a slider: back to the default, the value attribute in the HTML.
         slider.addEventListener("dblclick", () => {
           slider.value = slider.defaultValue;
           field.value = slider.defaultValue;
-          f();
+          onChange();
         });
       }
 
-      sliders.forEach((s, i) => link(s, fields[i], update));
-      link($("delay"), $("delay").nextElementSibling, setDelay);
-      selects.forEach((s) => s.addEventListener("change", update));
+      $("trace").hidden = !new URLSearchParams(location.search).has("trace");
+      const traceRows = $("trace-rows");
+      // A question mark, not NaN: a reading that could not be taken is worth
+      // telling apart from a reading that disagrees.
+      const pad = (value) => (Number.isFinite(value) ? String(Math.round(value)) : "?").padStart(4);
+      /** How long after a crossing the wave is read. */
+      const LOOK = 80;
+      /*
+       * The first unit's progress and the last one's, in that order — never the
+       * smallest and the largest. Both ends of the wave hold the same pair of
+       * numbers whichever way round it runs, so only which one comes first says
+       * anything. Falling is a wave from the start, rising one from the end.
+       */
+      const part = (value) => (Number.isFinite(value) ? value.toFixed(2) : "?").padStart(5);
+      const parts = (values) => `${part(values[0])}..${part(values.at(-1))}`;
+      // How each column looks, taken off its heading rather than said twice:
+      // the heading is where a column is named, so let it be where a column is
+      // sized and aligned too. Every cell wears its heading's classes.
+      const traceHeads = [...$("trace").querySelectorAll("thead th")];
+      const traceLooks = traceHeads.map((th) => th.className);
+      /*
+       * The columns that are verdicts rather than readings, and there are two
+       * verdicts to take. Each goes green or red across all the cells it covers.
+       *
+       * The aim is the rule: the side the pointer crossed, held against the end
+       * the script then picked. In starts the wave at that side, out at the
+       * other one.
+       *
+       * The run is the page itself, held against that same end: whichever end
+       * of the text is further along is the end the wave is really coming from.
+       * The aim can be right and the run still wrong — that is a value the page
+       * read too late, and a different bug from a rule that picked the wrong
+       * end.
+       */
+      const TRACE_AIM = ["side", "wave from"];
+      const TRACE_RUN = ["progress"];
+      // Left is the start of the text and right is its end, which is true of
+      // this page and would not be of one that runs the other way. Each
+      // crossing aims its own wave: coming in starts the leading wave at the
+      // side crossed, going out starts the trailing wave at the other one, so
+      // that the weight runs after the pointer and then lets go behind it.
+      const aimFor = (cells) => {
+        const crossed = cells.side === "left" ? "start" : "end";
+        if (cells.io === "in") return crossed;
+        return crossed === "start" ? "end" : "start";
+      };
+
+      // The end one of an element's waves points at, the way the library writes
+      // it. The flip is inverted while the pair is running back down, so
+      // --atw-way has to be read with it to get back to an end.
+      const endOf = (element, wave) => {
+        const flip = element.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
+        const down = element.style.getPropertyValue("--atw-way") === "-1";
+        return (flip === "1") !== down ? "end" : "start";
+      };
+
+      // Whether a wave is resting at an end, which is the only place the
+      // library will move the end it counts from. Read on the crossing itself:
+      // the library's own listener has run by then, but retargeting a
+      // transition does not move the value it is showing.
+      const freeNow = (element, wave) =>
+        [...element.querySelectorAll(`.${LINE}`)].every((line) => {
+          const at = Number(getComputedStyle(line).getPropertyValue(`--atw-wave-${wave}`));
+          return at < 0.02 || at > 0.98;
+        });
+
+      // Whichever end the wave reached first, read off the text itself. The
+      // leading wave lays weight down behind it, so its end is the heavier one;
+      // the trailing wave takes weight away, so its end is the lighter one.
+      // Equal counts as the start, which only happens when the reading was
+      // taken before anything had moved.
+      const ranFrom = (cells) => {
+        const [first, last] = cells.progress.split("..").map(Number);
+        const started = cells.io === "in" ? first >= last : first <= last;
+        return started ? "start" : "end";
+      };
+
+      /*
+       * Cursor mode: the same crossing again, beside the pointer. The panel is
+       * in a corner, and a wave is over here; one of the two has to move.
+       *
+       * The box is written on a crossing and only moved on a move, and it is
+       * its own element with nothing inside it but text, so neither costs the
+       * element under test anything.
+       */
+      const follow = $("trace-follow");
+      const cursorBox = $("trace-cursor");
+      follow.addEventListener("click", () => {
+        const on = follow.getAttribute("aria-pressed") !== "true";
+        follow.setAttribute("aria-pressed", String(on));
+        cursorBox.hidden = !on;
+      });
+      addEventListener(
+        "pointermove",
+        (event) => {
+          if (cursorBox.hidden) return;
+          cursorBox.style.left = `${event.clientX}px`;
+          cursorBox.style.top = `${event.clientY}px`;
+        },
+        { passive: true },
+      );
+
+      // Every crossing still on show, as JSON, newest first. The cells are
+      // kept as they were read rather than parsed back into numbers: a delay
+      // pair is two readings in one column, and a ? is a reading too.
+      const copied = [];
+      const copy = $("trace-copy");
+      copy.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(JSON.stringify(copied, null, 2));
+        copy.textContent = "✓ copied";
+        setTimeout(() => (copy.textContent = "⧉ copy"), 1200);
+      });
+
+      // A clean sheet before a run worth reading, in all three places a
+      // crossing is kept: the table, the box on the cursor, and the JSON.
+      $("trace-clear").addEventListener("click", () => {
+        traceRows.replaceChildren();
+        cursorBox.replaceChildren();
+        copied.length = 0;
+      });
+
+      /**
+       * One crossing, newest at the top, oldest off the bottom. Named cells
+       * rather than a list, so the panel's columns and the cursor box's labels
+       * are the same eight things said once.
+       */
+      function traceRow(cells, at, ran, free) {
+        copied.unshift({ at, ...cells });
+        copied.length = Math.min(copied.length, 12);
+
+        // Green or red, one verdict spread over both cells that carry it. The
+        // progress cell is judged against ran, the end in force while it was
+        // read, and not against wave from: the two are different moments.
+        //
+        // No verdict at all on the aim of a wave that was mid-crossing, which
+        // the library leaves alone on purpose: an end moved there re-sorts the
+        // line in a frame. It keeps the end it had, and that is not a miss.
+        const says = (pair, ok) => Object.fromEntries(pair.map((name) => [name, ok ? "ok" : "bad"]));
+        const verdict = {
+          ...(free ? says(TRACE_AIM, cells["wave from"] === aimFor(cells)) : {}),
+          ...says(TRACE_RUN, ran === ranFrom(cells)),
+        };
+        const mark = (name, index) => [traceLooks[index], verdict[name] ?? ""].join(" ").trim();
+
+        const row = document.createElement("tr");
+        Object.entries(cells).forEach(([name, cell], index) => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          // The one column that is cut, so it keeps the whole name to hover.
+          if (index === 0) td.title = cell;
+          td.className = mark(name, index);
+          row.append(td);
+        });
+        traceRows.prepend(row);
+        while (traceRows.children.length > 12) traceRows.lastChild.remove();
+
+        // The same cells again, one name and one value per line, for the box
+        // that rides along with the pointer.
+        cursorBox.replaceChildren(
+          ...Object.entries(cells).flatMap(([name, value], index) => {
+            const dt = document.createElement("dt");
+            dt.textContent = name;
+            const dd = document.createElement("dd");
+            dd.textContent = String(value).trim();
+            dd.className = mark(name, index);
+            return [dt, dd];
+          }),
+        );
+      }
+
+      /**
+       * A live read-out of every crossing of an element, so a real mouse can be
+       * read back. Two of the columns are the question itself — side, the half
+       * of the element the pointer was in, and wave from, the end the script
+       * then aimed at — and the rest are the evidence: where the pointer and
+       * the middle were, and how far each end of the text has actually come a
+       * moment later. That last one is what the eye sees, and the only one a
+       * value the page read too late can disagree with.
+       *
+       * The handler itself reads nothing; everything is measured later.
+       * Reading the page inside it would work out the waiting :hover on the
+       * spot, which is the very thing the library must never need.
+       */
+      function traceCrossings(element, name) {
+        for (const type of ["pointerenter", "pointerleave"]) {
+          element.addEventListener(type, (event) => {
+            // pageX, never offsetX: offsetX lays the page out, which is the
+            // very thing the handler under test must not do.
+            const pageX = Math.round(event.pageX);
+            // The moment the crossing happened, not the moment it was read a
+            // tick later, and the event carries it already.
+            const at = new Date(performance.timeOrigin + event.timeStamp).toISOString();
+            // Each crossing aims one wave: coming in the leading one, going
+            // out the trailing one. Whether that wave was free to be aimed can
+            // only be seen now, before it has moved on.
+            const wave = type === "pointerenter" ? "in" : "out";
+            const free = freeNow(element, wave);
+            // Far enough into the wave that its leading end has moved and its
+            // trailing end has not, which is the whole reading. On the tick
+            // itself both ends still read the same and say nothing.
+            setTimeout(() => {
+              const box = element.getBoundingClientRect();
+              const mid = box.left + scrollX + box.width / 2;
+              const units = [...element.querySelectorAll(`.${UNIT}`)];
+              const run = units.map((unit) =>
+                Number(getComputedStyle(unit).getPropertyValue("--animate-weight-progress")),
+              );
+              // One moment for both: the end goes in on the crossing itself
+              // now, so there is nothing left to wait for. Waiting would also
+              // read --atw-way after the band turned the pair round, which
+              // reports every end the wrong way about.
+              const ran = endOf(element, wave);
+              traceRow(
+                {
+                  element: name,
+                  io: wave,
+                  side: pageX < mid ? "left" : "right",
+                  "wave from": ran,
+                  x: pad(pageX),
+                  mid: pad(mid),
+                  progress: parts(run),
+                },
+                at,
+                ran,
+                free,
+              );
+            }, LOOK);
+          });
+        }
+      }
+      traceCrossings(preview, "sandbox");
+
+      /**
+       * The page below: a sticky nav and a heading per screenful.
+       *
+       * The nav follows the pointer, the headings follow the page, and both
+       * are set from the controls above, so the section reads as the library
+       * in use rather than as a second demo.
+       */
+      const navLinks = [...document.querySelectorAll(".page-nav a")];
+      const stops = [...document.querySelectorAll(".page-section > h3")];
+      const sandboxLinks = [...document.querySelectorAll(".sandbox-links a")];
+
+      function buildPage() {
+        const [, size] = fields.map((field) => Number(field.value));
+        for (const [elements, heading] of [
+          [navLinks, false],
+          [stops, true],
+          [sandboxLinks, true],
+        ]) {
+          for (const element of elements) {
+            element.style.fontWeight = selects[0].value;
+            element.style.setProperty("--animate-weight-to", selects[1].value);
+            element.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
+            element.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
+            setColor(element);
+            // The nav keeps its own size and stays a nav: by character, and
+            // following both, so hover it and the pointer has the say, scroll
+            // under it and the page does.
+            element.style.setProperty("--animate-weight-by", heading ? $("by").value : "character");
+            element.style.setProperty("--animate-weight-direction", heading ? $("direction").value : "pointer scroll");
+            // The sandbox's button and link keep their own size.
+            if (elements === stops) element.style.fontSize = `${size}px`;
+            calibrate(element);
+          }
+        }
+      }
+
+      /*
+       * One switch: which section you are in. Its link, its heading and its
+       * background all answer it, in CSS, so they can never disagree. The
+       * library's own waveNav walks the nav there, a section at a time.
+       */
+      waveNav(navLinks, { sectionClass: "active" });
+
+      // The nav crossings go into the same read-out. A link is the short case
+      // the eye can check against the numbers: a handful of letters, one line,
+      // and a middle a pointer crosses on purpose.
+      for (const navLink of navLinks) traceCrossings(navLink, navLink.textContent.trim());
+
+      /*
+       * The jumps, scrolled by hand at a pace that can be watched.
+       *
+       * scroll-behavior: smooth would do the scrolling but not the pace, and
+       * the browser's own pace over a page this tall outruns the wave it is
+       * meant to show. A speed rather than a duration, so a short jump stays
+       * short.
+       */
+      const SCROLL_SPEED = 2.5; // px per millisecond
+
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest?.('a[href^="#"]');
+        const to = link && document.getElementById(link.hash.slice(1));
+        if (!to) return;
+        event.preventDefault();
+        const from = scrollY;
+        // Its own scroll-margin-top, so a target under the sticky nav stops
+        // clear of it, the way the browser's own jump would.
+        const clear = parseFloat(getComputedStyle(to).scrollMarginTop) || 0;
+        const by = to.getBoundingClientRect().top - clear;
+        const ms = Math.min(2500, Math.max(400, Math.abs(by) / SCROLL_SPEED));
+        const began = performance.now();
+        const step = (now) => {
+          const progress = Math.min(1, (now - began) / ms);
+          // Slow at both ends, so neither the start nor the stop is a jolt.
+          scrollTo(0, from + by * (progress < 0.5 ? 2 * progress * progress : 1 - 2 * (1 - progress) ** 2));
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      });
+
+      sliders.forEach((slider, index) => link(slider, fields[index], update));
+      // The example's column takes the new width only when the slider is let
+      // go, so the controls beside it do not jump on every step of a drag.
+      const fitColumn = () => document.documentElement.style.setProperty("--w-col", `${fields[0].value}px`);
+      for (const element of [sliders[0], fields[0]]) element.addEventListener("change", fitColumn);
+      sliders[0].addEventListener("dblclick", fitColumn);
+      fitColumn();
+      // The tween needs no new measurement for these, but the frozen wave
+      // below it is drawn from them and has to be drawn again.
+      for (const id of ["delay", "duration"]) link($(id), $(id).nextElementSibling, update);
+      selects.forEach((select, index) =>
+        select.addEventListener("change", () => {
+          picked[index] = Number(select.value);
+          update();
+        }),
+      );
       $("by").addEventListener("change", update);
+      for (const id of ["color", "color-from", "color-to"]) $(id).addEventListener("change", update);
+      // The two colors only matter when the color is on. Run once too: a
+      // reload can bring the select back as "on".
+      const showColorEnds = () => ($("color-ends").hidden = $("color").value === "off");
+      $("color").addEventListener("change", showColorEnds);
+      showColorEnds();
+      $("direction").addEventListener("change", update);
+      $("case").addEventListener("change", update);
       source.addEventListener("input", update);
       fontUrl.addEventListener("change", loadFont);
       document.fonts.ready.then(() => {
         buildRange(rangeOf(familyOf(fontUrl.value)));
-        setDelay();
         update();
+        // The title's band on load: on a frame after it is split, so the
+        // script hears it, then off again to let the band come off.
+        const title = document.querySelector("h1");
+        requestAnimationFrame(() => {
+          title.style.setProperty("--animate-weight", "true");
+          setTimeout(() => title.style.removeProperty("--animate-weight"), 600);
+        });
       });
     </script>
   </body>
