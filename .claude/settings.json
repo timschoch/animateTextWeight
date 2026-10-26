@@ -2,11 +2,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|mcp__lean-ctx__ctx_shell",
+        "matcher": "Bash|mcp__lean-ctx__ctx_shell|mcp__lean-ctx__shell",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-destructive-git.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.agents/skills/verify/scripts/block-destructive-git.sh"
           }
         ]
       }

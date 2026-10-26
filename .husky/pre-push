@@ -1,1 +1,1 @@
-node .claude/hooks/check-push-branch.mjs
+node .agents/skills/verify/scripts/check-push-branch.mjs
