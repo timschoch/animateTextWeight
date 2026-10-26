@@ -10,7 +10,7 @@ Public npm package. Keep changes minimal — no internal-project scaffolding bey
 
 ## Rules
 
-- Conventional commits and branch-protection are enforced by git hooks (`.husky/commit-msg`, `.husky/pre-push`) — see `.claude/skills/setup-repo` scripts if you need to touch them.
+- Conventional commits and branch-protection are enforced by git hooks (`.husky/commit-msg`, `.husky/pre-push`) — the scripts live in `.agents/skills/verify/scripts/` (synced by skilly, never edit them here).
 - Pre-commit runs Prettier via lint-staged (`.lintstagedrc`).
 - `dist/` is gitignored — it is built by `prepare`, not committed.
 
