@@ -3,12 +3,14 @@
   "skills": {
     "1-3-1": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/1-3-1/SKILL.md",
       "computedHash": "c7bb7663fa9733416be7c74f91bbb490394f70710e3f8620b2c7ed9f963032c3"
     },
     "afk": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/afk/SKILL.md",
       "computedHash": "01011179cc9fe04330d7ac0191bbab9239a614be545aa5be68c3623775ee710b"
@@ -27,18 +29,21 @@
     },
     "audit-agent-history": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/audit-agent-history/SKILL.md",
       "computedHash": "99fd53d98b51f75937862c22f50dfb43789eee6db8074c7d903d5f6e063ed5a1"
     },
     "audit-skilly-workflow": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/audit-skilly-workflow/SKILL.md",
-      "computedHash": "9eed73169f591a25740a073821afb472d4c08292b4930eef210615b576c3b613"
+      "computedHash": "ec4816ce07866a48dc71ec48e05bb3827e2c20289c8a961e974c4d35d24711ae"
     },
     "babysit-pr": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/babysit-pr/SKILL.md",
       "computedHash": "4edc541cc4db20726d716239107e9961e54eefa1cb5f22b5883490643cc9e0d0"
@@ -51,6 +56,7 @@
     },
     "cleanup-merged-branches": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/cleanup-merged-branches/SKILL.md",
       "computedHash": "22567cc9180ec5d1951841f4149503f3863f5e0c329c0e84b1a1f408ee8f7fb8"
@@ -93,6 +99,7 @@
     },
     "git-shortcuts": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/git-shortcuts/SKILL.md",
       "computedHash": "73e78ada3e491906a15d83d4c4fc4e26c675b0d576a4001b512a070b950e5306"
@@ -107,7 +114,7 @@
       "source": "nutlope/hallmark",
       "sourceType": "github",
       "skillPath": "skills/hallmark/SKILL.md",
-      "computedHash": "dec973b9dc9f6508eaf17447b41a1185d2a0d0fc7d6fe6ecdc7f5f75293bd107"
+      "computedHash": "611aa02a0444197b38896cb3073866ae9563f10005f7d14e7bf4baf8ab58f437"
     },
     "handoff": {
       "source": "timschoch/mattpocock-skills",
@@ -147,18 +154,21 @@
     },
     "naming": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/naming/SKILL.md",
-      "computedHash": "e3e4181c468439576468afe8714ace39b9cc6917b11d21d7836bda24365bd29a"
+      "computedHash": "481d5af35e421df49e12206c79ec90cbd0620b56ce0f5a96cee08f8f11b83f16"
     },
     "orchestrate": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/orchestrate/SKILL.md",
       "computedHash": "3607a87b1417592ddee6a538e4aed87eddc82fe9c41a96ae6fb4b1d365573234"
     },
     "plan-critics": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/plan-critics/SKILL.md",
       "computedHash": "e61ac12c695041f2e876517bba943f3f389d9ceb178018f2f29e105d135ea667"
@@ -195,6 +205,7 @@
     },
     "progress": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/progress/SKILL.md",
       "computedHash": "a544b46c89283795f29b9ed2be45acf69c275862e7bd44d63d201aefe401508d"
@@ -205,14 +216,9 @@
       "skillPath": "skills/engineering/prototype/SKILL.md",
       "computedHash": "d3fc74689bd993e39c44bfae510d014eecffbeec2922764b065377fd1327c0f6"
     },
-    "publish-npm-package": {
-      "source": "yigitkonur/skills-by-yigitkonur",
-      "sourceType": "github",
-      "skillPath": "skills/publish-npm-package/SKILL.md",
-      "computedHash": "d50a8c4157ad2670501ff21ce2a29b0017621267bccd80fa1e237eca8e1ff837"
-    },
     "qa": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/qa/SKILL.md",
       "computedHash": "0c315c4da01a369adf3d71337cc682fcb4f4b674839a95d2b2691c634f70b09c"
@@ -231,12 +237,14 @@
     },
     "skilly-cli": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/skilly-cli/SKILL.md",
-      "computedHash": "aff6d6a1eb050ed86eff063140950dd5fc0c473083a71f2cd0302e02b50e817e"
+      "computedHash": "9b068ce3b2577530d86d1604eb69a80a0b1794b44bfe9c7cd452c48f8c6c1851"
     },
     "step-by-step": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/step-by-step/SKILL.md",
       "computedHash": "4ed24568e43d4c9e9164349a580344ef0974f51057255232e1a8f3e5dc4d8356"
@@ -255,6 +263,7 @@
     },
     "term-check": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/term-check/SKILL.md",
       "computedHash": "919d0874a081fdaf3d5bcbca8ecaa287e7fa438af36f7574aaced2795d5aaa14"
@@ -309,9 +318,10 @@
     },
     "verify": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/verify/SKILL.md",
-      "computedHash": "169ab6d241315d866e536b867bb83cbcfc96b51b12747d6a7a2a326ef780062d"
+      "computedHash": "5b3df55db3a74e119d5534ccb90ee7490ddd4c49bd93a8834f534207c8ef7649"
     },
     "wait-what": {
       "source": "timschoch/mattpocock-skills",
@@ -327,6 +337,7 @@
     },
     "wdyt": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/wdyt/SKILL.md",
       "computedHash": "141e9a2e8f1fc7128d616bccb13606fd820696be8463ad7e6689e6859012a60d"
@@ -351,9 +362,10 @@
     },
     "writing-rules": {
       "source": "timschoch/skilly",
+      "ref": "v0.3.0",
       "sourceType": "github",
       "skillPath": "bundles/workflow/skills/writing-rules/SKILL.md",
-      "computedHash": "f293f1566890ef7836b3cbc06f410cfcce927ab953f0e83dcb708e5c5d02c932"
+      "computedHash": "7c3018175226cebc5cea82cb77721defbee00fed30d52c891c723d7d6c8cf4a4"
     }
   }
 }
