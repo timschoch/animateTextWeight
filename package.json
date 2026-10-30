@@ -28,12 +28,12 @@
     "build": "tsc",
     "test": "tsc && node --test test/band.test.mjs test/waves.test.mjs",
     "test:browser": "tsc && node --test test/*.browser.test.mjs",
-    "prepare": "husky && tsc",
+    "prepare": "lefthook install --reset-hooks-path && tsc",
     "demo": "tsc && npx -y serve -l 3000 .",
     "compare": "tsc && node scripts/compare.mjs"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
+    "lefthook": "^2.2.2",
     "lint-staged": "^17.5.0",
     "prettier": "^3.9.6",
     "puppeteer-core": "^25.12.0",
