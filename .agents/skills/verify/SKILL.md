@@ -92,7 +92,7 @@ A step needs `name`, `stage` and `run`. The other step fields work as in the def
 | Field | Effect |
 | --- | --- |
 | `"paths": ["src/", "*.css"]` | in a stage with `changedOnly`, runs only when the diff to the default branch holds a match. Patterns as in [Changed tests](#changed-tests) |
-| `"toolchain": ["playwright"]` | CI installs and caches it before the stage runs. `plan.mjs` names the toolchains it knows |
+| `"toolchain": ["playwright"]` | CI installs it before the stage runs. `plan.mjs` names the toolchains it knows. It also finds one by name in the step's command and in the package.json scripts it calls, so such a step declares nothing |
 | `"issueLabels": ["nightly-tests"]` | in the nightly, a red step opens or updates one issue per first label |
 
 verify reads the Bundle configs from `.skilly/engine/bundles/`, or from `bundles/` in the Hub. With neither, it prints a note and runs without the Bundle steps.

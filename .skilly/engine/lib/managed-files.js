@@ -24,9 +24,10 @@ const STEP_INDENT = '      ';
 const PACKAGE_MANAGERS = {
   npm: { lockfile: 'package-lock.json', install: 'npm ci', exec: 'npx' },
   pnpm: { lockfile: 'pnpm-lock.yaml', install: 'pnpm install --frozen-lockfile', exec: 'pnpm exec' },
+  yarn: { lockfile: 'yarn.lock', install: 'yarn install --frozen-lockfile', exec: 'yarn' },
 };
 // Lockfiles of the package managers without a template, so the Sync names them.
-const OTHER_LOCKFILES = { 'yarn.lock': 'yarn', 'bun.lock': 'bun', 'bun.lockb': 'bun' };
+const OTHER_LOCKFILES = { 'bun.lock': 'bun', 'bun.lockb': 'bun' };
 
 const readPackageJson = (cwd) => {
   const path = join(cwd, 'package.json');
@@ -35,13 +36,17 @@ const readPackageJson = (cwd) => {
 
 // `packageManager` in package.json names it. Without one, the lockfile does; without both, npm.
 export function detectPackageManager(cwd, packageJson = readPackageJson(cwd)) {
-  const named = packageJson.packageManager?.split('@')[0];
+  const [named, version] = packageJson.packageManager?.split('@') ?? [];
   const found =
     named ??
     Object.entries(PACKAGE_MANAGERS).find(([, { lockfile }]) => existsSync(join(cwd, lockfile)))?.[0] ??
     Object.entries(OTHER_LOCKFILES).find(([lockfile]) => existsSync(join(cwd, lockfile)))?.[1] ??
     'npm';
-  if (!PACKAGE_MANAGERS[found]) throw new Error(`no Managed workflow for ${found}: the Engine knows npm and pnpm`);
+  if (!PACKAGE_MANAGERS[found]) throw new Error(`no Managed workflow for ${found}: the Engine knows npm, pnpm and yarn`);
+  // Yarn 2 and higher have other install flags and no `yarn audit`, and CI runners ship yarn 1.
+  if (found === 'yarn' && (parseInt(version) >= 2 || existsSync(join(cwd, '.yarnrc.yml')))) {
+    throw new Error('no Managed workflow for yarn 2 or higher: the Engine knows yarn 1');
+  }
   return found;
 }
 
