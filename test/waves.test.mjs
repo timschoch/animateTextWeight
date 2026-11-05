@@ -21,7 +21,9 @@ const weight = (state) => signed(state) || 0;
 const ENDS = ["0", "1"];
 const WAYS = ["1", "-1"];
 const ALL = ENDS.flatMap((leading) =>
-  ENDS.flatMap((trailing) => WAYS.map((way) => ({ in: leading, out: trailing, way })))
+  ENDS.flatMap((trailing) =>
+    WAYS.map((way) => ({ in: leading, out: trailing, way }))
+  )
 );
 const name = (state) => `in ${state.in} out ${state.out} way ${state.way}`;
 
@@ -32,7 +34,8 @@ test("an entry always rests at full weight", () => {
 });
 
 test("a leaving after an entry always rests at no weight", () => {
-  for (const state of ALL) assert.equal(weight(left(entered(state))), 0, name(state));
+  for (const state of ALL)
+    assert.equal(weight(left(entered(state))), 0, name(state));
 });
 
 test("settling twice says the same as settling once", () => {
@@ -42,7 +45,9 @@ test("settling twice says the same as settling once", () => {
 });
 
 test("settling leaves waves at opposite ends alone", () => {
-  for (const state of ALL.filter((candidate) => candidate.in !== candidate.out)) {
+  for (const state of ALL.filter(
+    (candidate) => candidate.in !== candidate.out
+  )) {
     assert.deepEqual(settled(state), state, name(state));
   }
 });

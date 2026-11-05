@@ -47,7 +47,8 @@ export function waveNav(
     if (on) pair.link.setAttribute("aria-current", "true");
     else pair.link.removeAttribute("aria-current");
     if (options.linkClass) pair.link.classList.toggle(options.linkClass, on);
-    if (options.sectionClass) pair.section.classList.toggle(options.sectionClass, on);
+    if (options.sectionClass)
+      pair.section.classList.toggle(options.sectionClass, on);
   }
 
   /** The section across the middle, by index: -1 above the first, the length past the last. */

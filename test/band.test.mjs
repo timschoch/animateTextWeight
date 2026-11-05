@@ -84,7 +84,8 @@ test("progress stays between 0 and 1", () => {
         for (const flipOut of [0, 1]) {
           for (const lag of [0, DELAY, DURATION, 400]) {
             const rows = grid({ from, to, lag, flipIn, flipOut, way });
-            for (const progress of rows.flat()) assert.ok(progress >= 0 && progress <= 1);
+            for (const progress of rows.flat())
+              assert.ok(progress >= 0 && progress <= 1);
           }
         }
       }
@@ -115,7 +116,10 @@ test("regression: a pair running home with flips inverted draws the same band", 
     assert.equal(home.length, up.length);
     up.forEach((row, time) =>
       row.forEach((progress, index) =>
-        assert.ok(Math.abs(progress - home[time][index]) < 1e-9, `lag ${lag} time ${time} index ${index}`)
+        assert.ok(
+          Math.abs(progress - home[time][index]) < 1e-9,
+          `lag ${lag} time ${time} index ${index}`
+        )
       )
     );
   }
@@ -125,7 +129,9 @@ test("a band is as heavy as its lag is long, up to a duration", () => {
   // The two waves run at the same speed, so a unit is lit for exactly the lag
   // and reaches lag / duration of full weight.
   for (const lag of [DELAY, DURATION / 2, DURATION, 400]) {
-    assert.ok(Math.abs(peak(grid({ lag })) - Math.min(1, lag / DURATION)) < 1e-9);
+    assert.ok(
+      Math.abs(peak(grid({ lag })) - Math.min(1, lag / DURATION)) < 1e-9
+    );
   }
   // One unit's delay is enough to see; over half a duration is over half.
   assert.ok(peak(grid({ lag: DELAY })) > 0);

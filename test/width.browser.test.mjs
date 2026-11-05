@@ -60,7 +60,12 @@ test("line widths do not move from the from weight to the to weight", async (con
       }, id);
       // The transition span is at least 1ms even at duration: 0s (see
       // animateTextWeight.css, --atw-span). A frame is enough to settle it.
-      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await page.evaluate(
+        () =>
+          new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve))
+          )
+      );
       const on = await measure(page, id);
 
       await page.evaluate((id) => {
@@ -70,14 +75,18 @@ test("line widths do not move from the from weight to the to weight", async (con
       assert.notStrictEqual(
         on.fontWeight,
         rest.fontWeight,
-        `${id}: font-weight did not change, the assertion below would be vacuous`,
+        `${id}: font-weight did not change, the assertion below would be vacuous`
       );
-      assert.strictEqual(on.widths.length, rest.widths.length, `${id}: line count changed`);
+      assert.strictEqual(
+        on.widths.length,
+        rest.widths.length,
+        `${id}: line count changed`
+      );
       on.widths.forEach((width, index) => {
         const diff = Math.abs(width - rest.widths[index]);
         assert.ok(
           diff <= TOLERANCE_PX,
-          `${id}: line ${index} moved ${diff.toFixed(3)}px (${rest.widths[index].toFixed(3)} -> ${width.toFixed(3)})`,
+          `${id}: line ${index} moved ${diff.toFixed(3)}px (${rest.widths[index].toFixed(3)} -> ${width.toFixed(3)})`
         );
       });
     });

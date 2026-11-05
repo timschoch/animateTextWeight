@@ -32,19 +32,25 @@ const settle = (page) =>
         let last = "";
         let still = 0;
         const frame = () => {
-          const active = [...document.querySelectorAll(".page-section.active")].map((element) => element.id);
-          const across = [...document.querySelectorAll(".page-section")].filter((section) => {
-            const box = section.getBoundingClientRect();
-            return box.top <= middle && box.bottom > middle;
-          });
-          const arrived = `${active}` === `${across.map((section) => section.id)}`;
+          const active = [
+            ...document.querySelectorAll(".page-section.active"),
+          ].map((element) => element.id);
+          const across = [...document.querySelectorAll(".page-section")].filter(
+            (section) => {
+              const box = section.getBoundingClientRect();
+              return box.top <= middle && box.bottom > middle;
+            }
+          );
+          const arrived =
+            `${active}` === `${across.map((section) => section.id)}`;
           const now = `${scrollY} ${active}`;
           if (now !== last) [last, still] = [now, 0];
-          else if ((arrived && ++still > 10) || performance.now() > until) return done();
+          else if ((arrived && ++still > 10) || performance.now() > until)
+            return done();
           requestAnimationFrame(frame);
         };
         requestAnimationFrame(frame);
-      }),
+      })
   );
 
 /** What is marked, next to what should be: the section across the middle. */
@@ -53,7 +59,10 @@ const read = (page) =>
     const middle = innerHeight / 2;
     const sections = [...document.querySelectorAll(".page-section")];
     // The switch as the tween reads it: the computed value, whatever set it.
-    const isOn = (element) => element && getComputedStyle(element).getPropertyValue("--animate-weight").trim() === "true";
+    const isOn = (element) =>
+      element &&
+      getComputedStyle(element).getPropertyValue("--animate-weight").trim() ===
+        "true";
     const lit = (elements) => elements.filter(isOn).length;
     const ids = (elements) => elements.map((element) => element.id);
     const across = sections.filter((section) => {
@@ -61,13 +70,21 @@ const read = (page) =>
       return box.top <= middle && box.bottom > middle;
     });
     return {
-      expected: { active: ids(across), links: across.length, headings: across.length },
+      expected: {
+        active: ids(across),
+        links: across.length,
+        headings: across.length,
+      },
       actual: {
-        active: ids(sections.filter((section) => section.classList.contains("active"))),
+        active: ids(
+          sections.filter((section) => section.classList.contains("active"))
+        ),
         links: lit([...document.querySelectorAll(".page-nav a")]),
         headings: lit([...document.querySelectorAll(".page-section > h3")]),
       },
-      linked: across.every((section) => isOn(document.querySelector(`.page-nav a[href="#${section.id}"]`))),
+      linked: across.every((section) =>
+        isOn(document.querySelector(`.page-nav a[href="#${section.id}"]`))
+      ),
     };
   });
 
@@ -78,15 +95,25 @@ const marks = (page) => page.evaluate(() => window.marks.splice(0));
 function walk(ids, from, to) {
   const way = Math.sign(to - from);
   const out = [];
-  for (let index = from; index !== to; index += way) out.push(`${ids[index]} off`, `${ids[index + way]} on`);
+  for (let index = from; index !== to; index += way)
+    out.push(`${ids[index]} off`, `${ids[index + way]} on`);
   return out;
 }
 
 async function validate(page, label, id) {
   await settle(page);
   const { expected, actual, linked } = await read(page);
-  if (id) assert.deepEqual(expected.active, [id], `${label}: expected ${id} across the middle`);
-  assert.deepEqual(actual, expected, `${label}: marked sections, links and headings`);
+  if (id)
+    assert.deepEqual(
+      expected.active,
+      [id],
+      `${label}: expected ${id} across the middle`
+    );
+  assert.deepEqual(
+    actual,
+    expected,
+    `${label}: marked sections, links and headings`
+  );
   assert.ok(linked, `${label}: the active section's own link is the lit one`);
 }
 
@@ -109,9 +136,15 @@ test("only the section across the middle stays marked through Home, End and anch
     const heard = new MutationObserver((records) => {
       // Off the value before, as the section may have moved again since.
       for (const { target, oldValue } of records)
-        window.marks.push(`${target.id} ${/\bactive\b/.test(oldValue) ? "off" : "on"}`);
+        window.marks.push(
+          `${target.id} ${/\bactive\b/.test(oldValue) ? "off" : "on"}`
+        );
     });
-    for (const section of sections) heard.observe(section, { attributeFilter: ["class"], attributeOldValue: true });
+    for (const section of sections)
+      heard.observe(section, {
+        attributeFilter: ["class"],
+        attributeOldValue: true,
+      });
     return sections.map((section) => section.id);
   });
   await page.emulateCPUThrottling(4);
@@ -119,10 +152,18 @@ test("only the section across the middle stays marked through Home, End and anch
   for (let round = 0; round < ROUNDS; round++) {
     await page.keyboard.press("End");
     await validate(page, `round ${round} End`, ids.at(-1));
-    assert.deepEqual(await marks(page), walk(ids, 0, ids.length - 1), `round ${round} End: sections passed`);
+    assert.deepEqual(
+      await marks(page),
+      walk(ids, 0, ids.length - 1),
+      `round ${round} End: sections passed`
+    );
     await page.keyboard.press("Home");
     await validate(page, `round ${round} Home`, "sec-about");
-    assert.deepEqual(await marks(page), walk(ids, ids.length - 1, 0), `round ${round} Home: sections passed`);
+    assert.deepEqual(
+      await marks(page),
+      walk(ids, ids.length - 1, 0),
+      `round ${round} Home: sections passed`
+    );
   }
   for (const hash of ["#sec-thanks", "#sec-use"]) {
     await page.click(`.page-nav a[href="${hash}"]`);

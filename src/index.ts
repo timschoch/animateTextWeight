@@ -89,12 +89,19 @@ export interface Report {
  * The weight range set in CSS, or null when the element does not animate.
  * --animate-weight-from is optional: the element's font-weight is the from weight.
  */
-export function range(element: Element): { from: number; to: number; by: Mode } | null {
+export function range(
+  element: Element
+): { from: number; to: number; by: Mode } | null {
   const cs = getComputedStyle(element);
-  const from = Number(cs.getPropertyValue("--animate-weight-from")) || Number(cs.fontWeight);
+  const from =
+    Number(cs.getPropertyValue("--animate-weight-from")) ||
+    Number(cs.fontWeight);
   const to = Number(cs.getPropertyValue("--animate-weight-to"));
   if (!from || !to || from === to) return null;
-  const by = cs.getPropertyValue("--animate-weight-by").trim() === "character" ? "character" : "line";
+  const by =
+    cs.getPropertyValue("--animate-weight-by").trim() === "character"
+      ? "character"
+      : "line";
   return { from, to, by };
 }
 
@@ -103,7 +110,10 @@ export function findAll(root: ParentNode = document): HTMLElement[] {
   const out: HTMLElement[] = [];
   for (const element of root.querySelectorAll<HTMLElement>("*")) {
     if (element.classList.contains(LINE)) continue;
-    const hasText = [...element.childNodes].some((child) => child.nodeType === Node.TEXT_NODE && /\S/.test(child.textContent ?? ""));
+    const hasText = [...element.childNodes].some(
+      (child) =>
+        child.nodeType === Node.TEXT_NODE && /\S/.test(child.textContent ?? "")
+    );
     if (hasText && range(element)) out.push(element);
   }
   return out;
@@ -121,12 +131,16 @@ export function readLines(element: HTMLElement): string[] {
       rangeOf.setStart(node, word.index);
       rangeOf.setEnd(node, word.index + word[0].length);
       const rect = rangeOf.getBoundingClientRect();
-      const line = lines.find((candidate) => Math.abs(candidate.top - rect.top) < 1);
+      const line = lines.find(
+        (candidate) => Math.abs(candidate.top - rect.top) < 1
+      );
       if (line) line.words.push(word[0]);
       else lines.push({ top: rect.top, words: [word[0]] });
     }
   }
-  return lines.sort((above, below) => above.top - below.top).map((line) => line.words.join(" "));
+  return lines
+    .sort((above, below) => above.top - below.top)
+    .map((line) => line.words.join(" "));
 }
 
 /**
@@ -135,8 +149,13 @@ export function readLines(element: HTMLElement): string[] {
  */
 function restore(element: HTMLElement): void {
   const source = sources.get(element);
-  if (source && element.querySelector(`.${LINE}`)) element.replaceChildren(...source.map((child) => child.cloneNode(true)));
-  else sources.set(element, [...element.childNodes].map((child) => child.cloneNode(true)));
+  if (source && element.querySelector(`.${LINE}`))
+    element.replaceChildren(...source.map((child) => child.cloneNode(true)));
+  else
+    sources.set(
+      element,
+      [...element.childNodes].map((child) => child.cloneNode(true))
+    );
 }
 
 /**
@@ -145,11 +164,18 @@ function restore(element: HTMLElement): void {
  * Three decimals. More makes Firefox shimmer, fewer leaves 0.04px gaps.
  */
 function values(span: HTMLElement, name: string, list: number[]): void {
-  list.forEach((value, stop) => span.style.setProperty(`--atw-${name}-${stop}`, `${value.toFixed(3)}px`));
+  list.forEach((value, stop) =>
+    span.style.setProperty(`--atw-${name}-${stop}`, `${value.toFixed(3)}px`)
+  );
 }
 
 /** Switch a span on: the weights it moves between, and its place in the wave. */
-function unit(span: HTMLElement, from: number, to: number, delayCount: number): void {
+function unit(
+  span: HTMLElement,
+  from: number,
+  to: number,
+  delayCount: number
+): void {
   span.style.setProperty("--atw-from", String(from));
   span.style.setProperty("--atw-to", String(to));
   span.style.setProperty("--atw-delay-count", String(delayCount));
@@ -159,7 +185,9 @@ function unit(span: HTMLElement, from: number, to: number, delayCount: number): 
 /** Graphemes of a text, so an accent or an emoji stays whole. */
 function graphemes(text: string): string[] | null {
   if (typeof Intl.Segmenter !== "function") return null;
-  const parts = new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text);
+  const parts = new Intl.Segmenter(undefined, {
+    granularity: "grapheme",
+  }).segment(text);
   return [...parts].map((part) => part.segment);
 }
 
@@ -218,13 +246,21 @@ function slots(span: HTMLElement, rest: number, width: number): number {
  * every unit ever gets, one by one, because they do not all get widest at the
  * same weight: a word space is at its widest at the lightest.
  */
-function fit(advances: number[][], target: number): { boxes: number[][]; widths: number[] } {
+function fit(
+  advances: number[][],
+  target: number
+): { boxes: number[][]; widths: number[] } {
   // At least one unit: splitChars returns early on a line that has none.
   const count = advances.length;
-  const widths = (advances[0] ?? []).map((_, stop) => advances.reduce((sum, own) => sum + (own[stop] ?? 0), 0));
+  const widths = (advances[0] ?? []).map((_, stop) =>
+    advances.reduce((sum, own) => sum + (own[stop] ?? 0), 0)
+  );
   const widest = advances.reduce((sum, own) => sum + Math.max(...own), 0);
   const reserve = Math.max(widest - target, 0) / count;
-  return { boxes: advances.map((own) => own.map((advance) => advance - reserve)), widths };
+  return {
+    boxes: advances.map((own) => own.map((advance) => advance - reserve)),
+    widths,
+  };
 }
 
 /**
@@ -243,7 +279,7 @@ function splitChars(
   from: number,
   to: number,
   base: number,
-  target: number,
+  target: number
 ): { units: Unit[]; widths: number[] } | null {
   const parts = graphemes(text);
   const node = line.firstChild;
@@ -280,7 +316,11 @@ function splitChars(
 
   // A unit's advance is its graphemes', added up.
   const kerned = units.map((unit) =>
-    perStop.map((row) => row.slice(unit.start, unit.start + unit.parts).reduce((sum, advance) => sum + advance, 0)),
+    perStop.map((row) =>
+      row
+        .slice(unit.start, unit.start + unit.parts)
+        .reduce((sum, advance) => sum + advance, 0)
+    )
   );
 
   const { boxes, widths } = fit(kerned, target);
@@ -295,13 +335,24 @@ function splitChars(
     const delayCount = /\S/.test(group.text) ? ++count : Math.max(count, 0);
     values(span, "w", boxes[index] ?? []);
     unit(span, from, to, delayCount);
-    return { span, out: { text: group.text, target: kerned[index]?.[0] ?? 0, boxes: boxes[index] ?? [], delayCount } };
+    return {
+      span,
+      out: {
+        text: group.text,
+        target: kerned[index]?.[0] ?? 0,
+        boxes: boxes[index] ?? [],
+        delayCount,
+      },
+    };
   });
 
   // The width the line is held at, and the only thing that decides it.
   line.style.setProperty("--atw-width", `${target.toFixed(3)}px`);
   // The far end of this line's wave, for a direction that counts from there.
-  line.style.setProperty("--atw-delay-total", String(Math.max(...made.map((piece) => piece.out.delayCount))));
+  line.style.setProperty(
+    "--atw-delay-total",
+    String(Math.max(...made.map((piece) => piece.out.delayCount)))
+  );
   line.replaceChildren(...made.map((piece) => piece.span));
   return { units: made.map((piece) => piece.out), widths };
 }
@@ -318,7 +369,9 @@ type Side = "start" | "end";
  * does.
  */
 function follows(element: HTMLElement): Set<string> {
-  const asked = getComputedStyle(element).getPropertyValue("--animate-weight-direction").trim();
+  const asked = getComputedStyle(element)
+    .getPropertyValue("--animate-weight-direction")
+    .trim();
   return new Set(asked ? asked.split(/\s+/) : []);
 }
 
@@ -369,7 +422,9 @@ function running(element: HTMLElement, which: "in" | "both"): Animation[] {
   return element
     .getAnimations({ subtree: true })
     .filter((run) =>
-      String((run as { transitionProperty?: string }).transitionProperty).startsWith(wanted),
+      String(
+        (run as { transitionProperty?: string }).transitionProperty
+      ).startsWith(wanted)
     );
 }
 
@@ -382,12 +437,16 @@ function running(element: HTMLElement, which: "in" | "both"): Animation[] {
  * the flip re-sorts the line in a single frame.
  */
 function parked(element: HTMLElement, which: "in" | "out"): boolean {
-  return [...element.querySelectorAll<HTMLElement>(`.${LINE}`)].every((line) => {
-    const wave = Number(getComputedStyle(line).getPropertyValue(`--atw-wave-${which}`));
-    // Not 0 and 1 exactly: a crossing can land a frame after the wave left an
-    // end, and that early the units still nearly agree.
-    return wave < 0.02 || wave > 0.98;
-  });
+  return [...element.querySelectorAll<HTMLElement>(`.${LINE}`)].every(
+    (line) => {
+      const wave = Number(
+        getComputedStyle(line).getPropertyValue(`--atw-wave-${which}`)
+      );
+      // Not 0 and 1 exactly: a crossing can land a frame after the wave left an
+      // end, and that early the units still nearly agree.
+      return wave < 0.02 || wave > 0.98;
+    }
+  );
 }
 
 /** The end each element's leading wave is to point at, once it may be moved. */
@@ -434,7 +493,8 @@ function turn(element: HTMLElement, side: Side): void {
 function waves(element: HTMLElement): Waves {
   const end = (name: string): End =>
     element.style.getPropertyValue(name) === "1" ? "1" : "0";
-  const way: Way = element.style.getPropertyValue("--atw-way") === "-1" ? "-1" : "1";
+  const way: Way =
+    element.style.getPropertyValue("--atw-way") === "-1" ? "-1" : "1";
   return { in: end("--atw-in"), out: end("--atw-out"), way };
 }
 
@@ -471,7 +531,9 @@ function send(element: HTMLElement, sent: Waves): void {
 function settle(element: HTMLElement): void {
   const runs = running(element, "both");
   if (runs.length) {
-    void Promise.allSettled(runs.map((run) => run.finished)).then(() => settle(element));
+    void Promise.allSettled(runs.map((run) => run.finished)).then(() =>
+      settle(element)
+    );
     return;
   }
   // A flip means an end only for the way the pair is running, so turning the
@@ -522,7 +584,7 @@ function watchScroll(): void {
         else if (follows(element).has("scroll")) turn(element, now);
       }
     },
-    { passive: true },
+    { passive: true }
   );
 }
 
@@ -530,7 +592,10 @@ function watchScroll(): void {
  * Elements whose waves the script sends, what takes their listeners down, and
  * whether the pointer is one of the things they follow.
  */
-const sending = new Map<HTMLElement, { off: AbortController; pointer: boolean }>();
+const sending = new Map<
+  HTMLElement,
+  { off: AbortController; pointer: boolean }
+>();
 
 /**
  * Follow the pointer across one element: a wave in after it and one out
@@ -564,7 +629,11 @@ const sending = new Map<HTMLElement, { off: AbortController; pointer: boolean }>
  * together, and a switch that a jump by End flips on and off again a frame
  * later would show nothing at all; sent from here, it gets the least band.
  */
-function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): void {
+function cross(
+  element: HTMLElement,
+  signal: AbortSignal,
+  pointer: boolean
+): void {
   // On the clock, so the switch can tell which of them flipped it.
   let enteredAt = 0;
   let leftAt = 0;
@@ -577,7 +646,8 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
     const box = element.getBoundingClientRect();
     // Line by line the wave runs top to bottom, so the height the pointer
     // crossed at is what says which end it is nearest.
-    if (!element.querySelector(`.${CHAR}`)) return event.clientY < box.top + box.height / 2 ? "start" : "end";
+    if (!element.querySelector(`.${CHAR}`))
+      return event.clientY < box.top + box.height / 2 ? "start" : "end";
     // Along a line, the left half is the start unless the text runs the other way.
     const rtl = getComputedStyle(element).direction === "rtl";
     return event.clientX < box.left + box.width / 2 !== rtl ? "start" : "end";
@@ -585,16 +655,24 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
   // Taken down when the element is dropped: one that comes back gets a fresh
   // set, never a second one on top.
   if (pointer) {
-    element.addEventListener("pointerenter", (event) => {
-      enteredAt = ++clock;
-      // Only where the leading wave is parked: every unit reads it as the same
-      // number there, so counting it from the other end changes nothing.
-      if (parked(element, "in")) aim(element, "in", near(event));
-    }, { signal });
-    element.addEventListener("pointerleave", (event) => {
-      leftAt = ++clock;
-      exit = OTHER_END[near(event)];
-    }, { signal });
+    element.addEventListener(
+      "pointerenter",
+      (event) => {
+        enteredAt = ++clock;
+        // Only where the leading wave is parked: every unit reads it as the same
+        // number there, so counting it from the other end changes nothing.
+        if (parked(element, "in")) aim(element, "in", near(event));
+      },
+      { signal }
+    );
+    element.addEventListener(
+      "pointerleave",
+      (event) => {
+        leftAt = ++clock;
+        exit = OTHER_END[near(event)];
+      },
+      { signal }
+    );
   }
   /*
    * The doorbell rings on transitionrun. A switch that flips back before the
@@ -604,14 +682,19 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
    */
   const hear = (event: TransitionEvent): void => {
     // One per line, and the first speaks for all of them.
-    if (event.propertyName !== "--atw-on" || event.target !== element.querySelector(`.${LINE}`)) return;
+    if (
+      event.propertyName !== "--atw-on" ||
+      event.target !== element.querySelector(`.${LINE}`)
+    )
+      return;
     const scroll = scrollers.has(element);
     if (switchedOn(element)) {
       onAt = ++clock;
       arrived = event.timeStamp;
       // The page switched it on, not the pointer: from the end it scrolled
       // toward, whatever the last pointer to pass left behind.
-      if (scroll && scrolledAt > enteredAt && parked(element, "in")) aim(element, "in", scrolledToward);
+      if (scroll && scrolledAt > enteredAt && parked(element, "in"))
+        aim(element, "in", scrolledToward);
       // Leading wave to the far end, trailing wave home again, every time. On a
       // fresh visit the trailing one is already home and only the leading one
       // moves, which opens the band; mid-band the leading one has already
@@ -625,7 +708,12 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
     // Only where the trailing wave is parked: one sent home again mid-band
     // keeps the end it had, and an end moved mid-crossing re-sorts the line.
     // The pointer's end if leaving is what let go, else the page's.
-    const end = leftAt > Math.max(onAt, scrolledAt) ? exit : scroll ? scrolledToward : aimed(element);
+    const end =
+      leftAt > Math.max(onAt, scrolledAt)
+        ? exit
+        : scroll
+          ? scrolledToward
+          : aimed(element);
     if (parked(element, "out")) aim(element, "out", end);
     // How far the trailing wave follows the leading one by: however long the
     // switch was on, and never less than --atw-wave-min-delay. Brush a link in
@@ -633,7 +721,7 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
     // The subtraction is left to CSS, which knows what that floor is.
     element.style.setProperty(
       "--atw-out-wait",
-      `max(0s, calc(var(--atw-wave-min-delay) - ${Math.round(event.timeStamp - arrived)}ms))`,
+      `max(0s, calc(var(--atw-wave-min-delay) - ${Math.round(event.timeStamp - arrived)}ms))`
     );
     send(element, left(waves(element)));
     settle(element);
@@ -644,7 +732,8 @@ function cross(element: HTMLElement, signal: AbortSignal, pointer: boolean): voi
 
 /** Whether the page's switch is on for an element right now. */
 const switchedOn = (element: HTMLElement): boolean =>
-  getComputedStyle(element).getPropertyValue("--animate-weight").trim() === "true";
+  getComputedStyle(element).getPropertyValue("--animate-weight").trim() ===
+  "true";
 
 /**
  * Follow whatever the element asked its direction to follow. Both watchers
@@ -745,11 +834,15 @@ export function calibrate(element: HTMLElement): Report | null {
   watchResize();
   watch(element);
   const { from, to } = asked;
-  const weights = Array.from({ length: STOPS }, (_, stop) => from + ((to - from) * stop) / (STOPS - 1));
+  const weights = Array.from(
+    { length: STOPS },
+    (_, stop) => from + ((to - from) * stop) / (STOPS - 1)
+  );
   // The element's own spacing is the from state; every stop adds to it.
   const base = parseFloat(getComputedStyle(element).letterSpacing) || 0;
   // Lines break at the from weight, so the element must sit there.
-  if (Number(getComputedStyle(element).fontWeight) !== from) element.style.fontWeight = String(from);
+  if (Number(getComputedStyle(element).fontWeight) !== from)
+    element.style.fontWeight = String(from);
 
   restore(element);
   const texts = readLines(element);
@@ -759,7 +852,11 @@ export function calibrate(element: HTMLElement): Report | null {
     span.textContent = text;
     return span;
   });
-  element.replaceChildren(...spans.flatMap((span, index) => (index ? [document.createElement("br"), span] : [span])));
+  element.replaceChildren(
+    ...spans.flatMap((span, index) =>
+      index ? [document.createElement("br"), span] : [span]
+    )
+  );
   // The far end of a line-by-line wave. A line split into characters sets its
   // own, which is the one its characters then see.
   element.style.setProperty("--atw-delay-total", String(spans.length - 1));
@@ -778,7 +875,10 @@ export function calibrate(element: HTMLElement): Report | null {
     const target = widthAt(from);
     span.style.removeProperty("font-weight");
 
-    const split = by === "character" ? splitChars(span, text, weights, from, to, base, target) : null;
+    const split =
+      by === "character"
+        ? splitChars(span, text, weights, from, to, base, target)
+        : null;
     if (by === "character" && !split) by = "line";
     const done = () => {
       span.style.removeProperty("letter-spacing");
@@ -789,7 +889,14 @@ export function calibrate(element: HTMLElement): Report | null {
       done();
       // The line only holds the break now; its characters carry the tween, and
       // their boxes carry the width.
-      return { text, target, widths: split.widths, spacing: [], delayCount: 0, units: split.units };
+      return {
+        text,
+        target,
+        widths: split.widths,
+        spacing: [],
+        delayCount: 0,
+        units: split.units,
+      };
     }
 
     // The slot count is measured at every stop, not counted from the text: a
@@ -802,7 +909,9 @@ export function calibrate(element: HTMLElement): Report | null {
       widths.push(width);
       counts.push(slots(span, base, width));
     }
-    const spacing = widths.map((width, stop) => base + (target - width) / (counts[stop] ?? 1));
+    const spacing = widths.map(
+      (width, stop) => base + (target - width) / (counts[stop] ?? 1)
+    );
     values(span, "ls", spacing);
     // One line, one delay: the block arrives line by line.
     unit(span, from, to, index);

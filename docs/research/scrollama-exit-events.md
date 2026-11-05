@@ -10,11 +10,11 @@ Confirmed in source, not filed as this exact bug report.
 
 ```js
 function intersectStep([entry]) {
-	onScroll(containerElement);
+  onScroll(containerElement);
 
-	const { isIntersecting, target } = entry;
-	if (isIntersecting) notifyStepEnter(target);
-	else notifyStepExit(target);
+  const { isIntersecting, target } = entry;
+  if (isIntersecting) notifyStepEnter(target);
+  else notifyStepExit(target);
 }
 ```
 
@@ -33,8 +33,9 @@ https://github.com/russellsamora/scrollama/blob/afab8ab2509a7e0112bee4bd7c131eaf
 No issue or PR proposes iterating all `entries` instead of `entries[0]`; the maintainer's own diagnosis in #26 stays at the IntersectionObserver-threshold level and never reaches the destructuring bug.
 
 **Release/maintenance status.**
+
 - npm `dist-tags.latest` is still `3.2.0`, published 2022-06-17: https://registry.npmjs.org/scrollama (`time["3.2.0"] = "2022-06-17T16:59:23.254Z"`)
-- Commit history after that release is almost inactive: one substantive commit in over 3 years, 2022-10-13 ("no jekyll" / demo housekeeping), then nothing until 2025-11-13, when two commits merged that only *remove* an unused `intersection-observer` polyfill devDependency — no logic change, and not published to npm (latest npm version is still `3.2.0`).
+- Commit history after that release is almost inactive: one substantive commit in over 3 years, 2022-10-13 ("no jekyll" / demo housekeeping), then nothing until 2025-11-13, when two commits merged that only _remove_ an unused `intersection-observer` polyfill devDependency — no logic change, and not published to npm (latest npm version is still `3.2.0`).
 - [PR #151 "Refactor & improve performance"](https://github.com/russellsamora/scrollama/pull/151) (opened, then closed unmerged, 2025-12-30) — the one PR with "refactor" in scope was closed without landing, no comments.
 - Repo not archived (`archived: false`), 11 open issues as of check, single maintainer (russellsamora). Practically unmaintained for behavioral fixes since mid-2022.
 
@@ -52,14 +53,14 @@ Why it can't get stuck the way scrollama does: it is **state-based, not event-ba
 
 ### b) Native IntersectionObserver, iterating ALL entries
 
-Fixes scrollama's specific bug by not discarding `entries[1..]`. Requires per-entry state per target and taking the *last* (by `entry.time`) or resolving in whatever order they arrive.
+Fixes scrollama's specific bug by not discarding `entries[1..]`. Requires per-entry state per target and taking the _last_ (by `entry.time`) or resolving in whatever order they arrive.
 
 **Can one callback contain multiple entries for the same target, and what's the ordering guarantee?** Per the W3C spec, yes, and ordering is expected-but-not-guaranteed-in-array-order:
 
 - Queuing: entries are appended to the observer's internal `[[QueuedEntries]]`, then "Let queue be a copy of observer's internal [[QueuedEntries]] slot … Invoke callback with queue as the first argument." (§3.2.5–3.2.6, notify-intersection-observers steps) — https://www.w3.org/TR/intersection-observer/#notify-intersection-observers-algo — confirms multiple queued entries are delivered together in one callback call.
 - MDN's summary of the same behavior: "multiple entries can be received at a time, either from multiple targets or from a single target crossing multiple thresholds in a short amount of time" and "entries are dispatched using a queue, so they should be ordered by the time they were generated, but you should preferably use `IntersectionObserverEntry.time` to correctly order them" — https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API — i.e., array order is a should, not a spec guarantee; correct code sorts/filters by `entry.time` per target, not by array position.
 
-Still viable and closer to scrollama's model, but it's more code than (a): still needs rootMargin math to define "midline crossing," still needs per-target entry-ordering logic to be spec-correct, and still fires on a queued/coalesced schedule rather than a guaranteed-fresh-state poll — a same-class bug (just not *this* bug) remains structurally possible if a future browser coalesces even more aggressively. (a) has no equivalent class of bug because it never trusts a delta/event stream.
+Still viable and closer to scrollama's model, but it's more code than (a): still needs rootMargin math to define "midline crossing," still needs per-target entry-ordering logic to be spec-correct, and still fires on a queued/coalesced schedule rather than a guaranteed-fresh-state poll — a same-class bug (just not _this_ bug) remains structurally possible if a future browser coalesces even more aggressively. (a) has no equivalent class of bug because it never trusts a delta/event stream.
 
 ### c) CSS-only
 

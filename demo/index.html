@@ -7,9 +7,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- The page's own font, which stays whatever is picked below. -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
     <!-- The font picked in the controls. Any variable font works. -->
-    <link id="font" href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+      id="font"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+      rel="stylesheet"
+    />
     <!-- The example fonts, so each button can show its own face. -->
     <link
       href="https://fonts.googleapis.com/css2?family=Aleo:ital,wght@0,100..900;1,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:wght@100..900&family=Mozilla+Headline:wght@200..700&family=Playwrite+DE+LA:wght@100..400&display=swap"
@@ -17,7 +24,10 @@
     />
     <link rel="stylesheet" href="../src/animateTextWeight.css" />
     <!-- Code coloring in GitHub's light theme. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/styles/github.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/styles/github.min.css"
+    />
     <style>
       :root {
         --label: clamp(100px, 15vw, 200px);
@@ -118,7 +128,7 @@
       .controls select {
         font-family: helvetica, arial, sans-serif;
         font-size: 16px;
-        height:auto;
+        height: auto;
         padding: 8px 12px;
         margin-inline: 8px;
         border: 1px solid var(--line);
@@ -293,7 +303,8 @@
       }
       .block.live p {
         font-weight: var(--from);
-        transition: font-weight var(--animate-weight-duration) var(--animate-weight-easing);
+        transition: font-weight var(--animate-weight-duration)
+          var(--animate-weight-easing);
       }
       .block.live:hover p {
         font-weight: var(--to);
@@ -316,7 +327,9 @@
         max-width: calc(100vw - 16px);
         box-sizing: border-box;
         padding: 8px;
-        font: 12px/1.5 ui-monospace, monospace;
+        font:
+          12px/1.5 ui-monospace,
+          monospace;
         color: white;
         background: rgba(0, 0, 0, 0.85);
         border-radius: 4px;
@@ -402,7 +415,9 @@
         translate: 14px 14px;
         margin: 0;
         padding: 4px 8px;
-        font: 12px/1.5 ui-monospace, monospace;
+        font:
+          12px/1.5 ui-monospace,
+          monospace;
         color: white;
         background: rgba(0, 0, 0, 0.85);
         border-radius: 4px;
@@ -606,12 +621,17 @@
         margin-block: calc(-1 * var(--pad-block));
         background: color-mix(
           in oklab,
-          color-mix(in oklab, #fbe9d4, #f1e2d0 calc(var(--p) * 100%)) calc(var(--p) * 100%),
+          color-mix(in oklab, #fbe9d4, #f1e2d0 calc(var(--p) * 100%))
+            calc(var(--p) * 100%),
           transparent
         );
         /* The shine: brightest mid-change, gone at rest, so it only lives on
            the wave front, and it runs along the outline with it. */
-        --shine: color-mix(in oklab, #d4953f calc(min(var(--p), 1 - var(--p)) * 200%), transparent);
+        --shine: color-mix(
+          in oklab,
+          #d4953f calc(min(var(--p), 1 - var(--p)) * 200%),
+          transparent
+        );
         box-shadow:
           inset 0 1.5px var(--shine),
           inset 0 -1.5px var(--shine);
@@ -742,21 +762,47 @@
 
     <div class="trace" id="trace" hidden>
       <div class="trace-tools">
-        <button type="button" id="trace-clear" title="Throw away every crossing so far">✕ clear</button>
-        <button type="button" id="trace-copy" title="Copy every crossing still on show, as JSON">⧉ copy</button>
-        <button type="button" id="trace-follow" aria-pressed="false" title="Carry the last crossing beside the cursor">
+        <button
+          type="button"
+          id="trace-clear"
+          title="Throw away every crossing so far"
+        >
+          ✕ clear
+        </button>
+        <button
+          type="button"
+          id="trace-copy"
+          title="Copy every crossing still on show, as JSON"
+        >
+          ⧉ copy
+        </button>
+        <button
+          type="button"
+          id="trace-follow"
+          aria-pressed="false"
+          title="Carry the last crossing beside the cursor"
+        >
           ◎ cursor
         </button>
       </div>
       <table>
         <thead>
           <tr>
-            <th class="wide" title="The element the pointer crossed">element</th>
+            <th class="wide" title="The element the pointer crossed">
+              element
+            </th>
             <th title="in on entering it, out on leaving it">io</th>
             <th title="Which half of the element the pointer was in">side</th>
-            <th title="The end of the text the script aimed the wave at">wave from</th>
+            <th title="The end of the text the script aimed the wave at">
+              wave from
+            </th>
             <th class="num" title="Where the pointer was, in page pixels">x</th>
-            <th class="num" title="Where the element's middle is, in page pixels">mid</th>
+            <th
+              class="num"
+              title="Where the element's middle is, in page pixels"
+            >
+              mid
+            </th>
             <th
               class="num wide"
               title="progress: how far the first letter has come, and the last one, read back off the page a moment after the crossing. 0 is light, 1 is bold.&#10;&#10;How to read it: does the last number fall or rise?&#10;0.31.. 0.00 falls, so the wave is coming from the left.&#10;0.00.. 0.31 rises, so it is coming from the right.&#10;&#10;Green when that matches the end the script aimed at, red when it does not."
@@ -784,8 +830,9 @@
       <section class="page-section" id="sec-about">
         <h3>About</h3>
         <p>
-          Use this for headlines, buttons and navigations to create stunning typographic animations. It animates the
-          font-weight of a variable font while keeping the overall width so things don't randomly shift around.
+          Use this for headlines, buttons and navigations to create stunning
+          typographic animations. It animates the font-weight of a variable font
+          while keeping the overall width so things don't randomly shift around.
         </p>
         <img
           class="compare"
@@ -793,14 +840,25 @@
           alt="SIMPLY LOVELY at weight 100 and 900 with animateTextWeight, both lines end at the same green line. UGLY INCHIDENT with plain CSS font-weight, the bold line ends far past the light one, the gap marked in red."
         />
         <p>
-          A variable font gets wider as it gets bolder. If you animate <code>font-weight</code> on its own, each line
-          grows as the weight goes up, and the text around it moves. animateTextWeight measures each rendered line at the
-          start and end weight and 9 steps between. At each of them it holds the line at its start width: with
-          letter-spacing in line mode, and with the width of each character box in character mode.
+          A variable font gets wider as it gets bolder. If you animate
+          <code>font-weight</code> on its own, each line grows as the weight
+          goes up, and the text around it moves. animateTextWeight measures each
+          rendered line at the start and end weight and 9 steps between. At each
+          of them it holds the line at its start width: with letter-spacing in
+          line mode, and with the width of each character box in character mode.
         </p>
         <div class="links about-links">
-          <a class="button" href="https://github.com/timschoch/animateTextWeight" target="_blank">View on GitHub</a>
-          <a href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk" target="_blank">Buy me a coffee</a>
+          <a
+            class="button"
+            href="https://github.com/timschoch/animateTextWeight"
+            target="_blank"
+            >View on GitHub</a
+          >
+          <a
+            href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk"
+            target="_blank"
+            >Buy me a coffee</a
+          >
         </div>
       </section>
 
@@ -816,96 +874,176 @@
             </div>
           </div>
 
-        <!-- Controls: label left, control right, 20/80. -->
-        <div class="controls">
-          <label for="font-url">Font</label>
-          <div>
-            <div class="examples" id="examples"></div>
-            <input type="url" id="font-url" value="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" />
-            <p class="hint">
-              Pick any <strong>variable</strong> font at
-              <a href="https://fonts.google.com/?categoryFilters=Technology:%2FTechnology%2FVariable" target="_blank">Google Fonts</a>,
-              then paste the URL from its embed code.
-            </p>
+          <!-- Controls: label left, control right, 20/80. -->
+          <div class="controls">
+            <label for="font-url">Font</label>
+            <div>
+              <div class="examples" id="examples"></div>
+              <input
+                type="url"
+                id="font-url"
+                value="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+              />
+              <p class="hint">
+                Pick any <strong>variable</strong> font at
+                <a
+                  href="https://fonts.google.com/?categoryFilters=Technology:%2FTechnology%2FVariable"
+                  target="_blank"
+                  >Google Fonts</a
+                >, then paste the URL from its embed code.
+              </p>
+            </div>
+
+            <label for="from">Weight</label>
+            <div>
+              From
+              <select id="from"></select>
+              to
+              <select id="to"></select>
+            </div>
+
+            <label for="by">Animate by</label>
+            <div>
+              <select id="by">
+                <option value="line">line</option>
+                <option value="character" selected>character</option>
+              </select>
+            </div>
+
+            <label for="direction">Direction</label>
+            <div>
+              <select id="direction">
+                <option value="start">start</option>
+                <option value="end">end</option>
+                <option value="pointer" selected>pointer</option>
+                <option value="scroll">scroll</option>
+                <option value="pointer scroll">pointer scroll</option></select
+              ><br />
+              <dl class="label states">
+                <dt>start</dt>
+                <dd>the wave starts where the text starts (needs a delay)</dd>
+                <dt>end</dt>
+                <dd>it starts where the text ends</dd>
+                <dt>pointer</dt>
+                <dd>
+                  the side the mouse crossed: come in from the left and it runs
+                  left to right, from the right and it runs right to left. By
+                  line: the top or the bottom
+                </dd>
+                <dt>scroll</dt>
+                <dd>
+                  the way the page last moved: down starts at the start, up at
+                  the end. Scroll through the sections to see it
+                </dd>
+                <dt>pointer scroll</dt>
+                <dd>
+                  both, whichever triggered last wins (useful for sticky navs)
+                </dd>
+              </dl>
+            </div>
+
+            <label for="delay">Delay</label>
+            <div>
+              <input
+                type="range"
+                id="delay"
+                min="0"
+                max="200"
+                step="5"
+                value="10"
+              />
+              <input type="number" step="5" value="10" /> ms<br />
+              <span class="label"
+                >how long one unit waits after the one before it (character:
+                5-20ms, line: 100ms+)</span
+              >
+            </div>
+
+            <label for="duration">Duration</label>
+            <div>
+              <input
+                type="range"
+                id="duration"
+                min="0"
+                max="2000"
+                step="50"
+                value="300"
+              />
+              <input type="number" step="50" value="300" /> ms<br />
+              <span class="label"
+                >how long one unit takes from one weight to the other</span
+              >
+            </div>
+
+            <label for="size">Size</label>
+            <div>
+              <input
+                type="range"
+                id="size"
+                min="12"
+                max="200"
+                step="4"
+                value="60"
+              />
+              <input type="number" value="60" /> px
+            </div>
+
+            <label for="case">Transform</label>
+            <div>
+              <select id="case">
+                <option value="uppercase" selected>caps</option>
+                <option value="none">normal</option>
+              </select>
+            </div>
+
+            <label for="color">Color</label>
+            <div>
+              <select id="color">
+                <option value="off" selected>off</option>
+                <option value="on">on</option>
+              </select>
+              <span id="color-ends" hidden
+                >from <input type="color" id="color-from" value="#1c1c1c" /> to
+                <input type="color" id="color-to" value="#c8102e"
+              /></span>
+            </div>
+
+            <h4 class="controls-group">Sandbox only</h4>
+
+            <label for="source">Text</label>
+            <div>
+              <div class="source" id="source" contenteditable="true">
+                WORKSHOP<br />Rapid Prototyping Week
+              </div>
+            </div>
+
+            <label for="spacing">Spacing</label>
+            <div>
+              <input
+                type="range"
+                id="spacing"
+                min="-5"
+                max="10"
+                step="0.1"
+                value="0"
+              />
+              <input type="number" step="0.1" value="0" /> px<br />
+              <span class="label">default spacing for your titles.</span>
+            </div>
+
+            <label for="width">Container width</label>
+            <div>
+              <input
+                type="range"
+                id="width"
+                min="300"
+                max="1200"
+                step="50"
+                value="800"
+              />
+              <input type="number" value="800" /> px
+            </div>
           </div>
-
-          <label for="from">Weight</label>
-          <div>From <select id="from"></select> to <select id="to"></select></div>
-
-          <label for="by">Animate by</label>
-          <div>
-            <select id="by">
-              <option value="line">line</option>
-              <option value="character" selected>character</option>
-            </select>
-          </div>
-
-          <label for="direction">Direction</label>
-          <div>
-            <select id="direction">
-              <option value="start">start</option>
-              <option value="end">end</option>
-              <option value="pointer" selected>pointer</option>
-              <option value="scroll">scroll</option>
-              <option value="pointer scroll">pointer scroll</option>
-            </select><br>
-            <dl class="label states">
-              <dt>start</dt>
-              <dd>the wave starts where the text starts (needs a delay)</dd>
-              <dt>end</dt>
-              <dd>it starts where the text ends</dd>
-              <dt>pointer</dt>
-              <dd>the side the mouse crossed: come in from the left and it runs left to right, from the right and it runs right to left. By line: the top or the bottom</dd>
-              <dt>scroll</dt>
-              <dd>the way the page last moved: down starts at the start, up at the end. Scroll through the sections to see it</dd>
-              <dt>pointer scroll</dt>
-              <dd>both, whichever triggered last wins (useful for sticky navs)</dd>
-            </dl>
-          </div>
-
-          <label for="delay">Delay</label>
-          <div><input type="range" id="delay" min="0" max="200" step="5" value="10" /> <input type="number" step="5" value="10" /> ms<br>
-            <span class="label">how long one unit waits after the one before it (character: 5-20ms, line: 100ms+)</span>
-          </div>
-
-          <label for="duration">Duration</label>
-          <div><input type="range" id="duration" min="0" max="2000" step="50" value="300" /> <input type="number" step="50" value="300" /> ms<br>
-            <span class="label">how long one unit takes from one weight to the other</span>
-          </div>
-
-          <label for="size">Size</label>
-          <div><input type="range" id="size" min="12" max="200" step="4" value="60" /> <input type="number" value="60" /> px</div>
-
-          <label for="case">Transform</label>
-          <div>
-            <select id="case">
-              <option value="uppercase" selected>caps</option>
-              <option value="none">normal</option>
-            </select>
-          </div>
-
-          <label for="color">Color</label>
-          <div>
-            <select id="color">
-              <option value="off" selected>off</option>
-              <option value="on">on</option>
-            </select>
-            <span id="color-ends" hidden>from <input type="color" id="color-from" value="#1c1c1c" /> to <input type="color" id="color-to" value="#c8102e" /></span>
-          </div>
-
-          <h4 class="controls-group">Sandbox only</h4>
-
-          <label for="source">Text</label>
-          <div><div class="source" id="source" contenteditable="true">WORKSHOP<br />Rapid Prototyping Week</div></div>
-
-          <label for="spacing">Spacing</label>
-          <div><input type="range" id="spacing" min="-5" max="10" step="0.1" value="0" /> <input type="number" step="0.1" value="0" /> px<br>
-            <span class="label">default spacing for your titles.</span>
-          </div>
-
-          <label for="width">Container width</label>
-          <div><input type="range" id="width" min="300" max="1200" step="50" value="800" /> <input type="number" value="800" /> px</div>
-        </div>
         </div>
       </section>
 
@@ -914,14 +1052,16 @@
         <p>Install it from npm.</p>
         <pre class="language-bash">npm install animate-text-weight</pre>
         <p>Add it to your website or web app.</p>
-        <pre class="language-js">import "animate-text-weight/style.css";
+        <pre class="language-js">
+import "animate-text-weight/style.css";
 import { init } from "animate-text-weight";
 
 init();
 
 // If your bundler does not handle CSS imports, link `node_modules/animate-text-weight/src/animateTextWeight.css` directly.</pre>
         <p>Add your CSS styling.</p>
-        <pre class="language-css">@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&amp;display=swap");
+        <pre class="language-css">
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&amp;display=swap");
 
 .nav a {
   font-family: "Outfit", sans-serif; /* a variable font */
@@ -932,8 +1072,12 @@ init();
 .nav a:hover {
   --animate-weight: true;
 }</pre>
-        <p>The script then wraps each line in a span. On hover that span animates from 300 to 700 and keeps its width.</p>
-        <pre class="language-html">&lt;a href="/"&gt;Foobar&lt;/a&gt;
+        <p>
+          The script then wraps each line in a span. On hover that span animates
+          from 300 to 700 and keeps its width.
+        </p>
+        <pre class="language-html">
+&lt;a href="/"&gt;Foobar&lt;/a&gt;
 
 &lt;!-- becomes --&gt;
 &lt;a href="/"&gt;
@@ -941,7 +1085,8 @@ init();
 &lt;/a&gt;</pre>
         <h4>CSS</h4>
         <p>Every available option:</p>
-        <pre class="language-css">.nav a {
+        <pre class="language-css">
+.nav a {
   font-family: "Outfit", sans-serif;
   --animate-weight-from: 300;
   --animate-weight-to: 700;
@@ -954,9 +1099,11 @@ init();
   --animate-weight-color-to: #6f4e37;
 }</pre>
         <p>
-          Then turn the animation on with <code>--animate-weight: true</code>, on the element itself or on any ancestor:
+          Then turn the animation on with <code>--animate-weight: true</code>,
+          on the element itself or on any ancestor:
         </p>
-        <pre class="language-css">/* animate all elements that have a --animate-weight-to */
+        <pre class="language-css">
+/* animate all elements that have a --animate-weight-to */
 .nav {
   --animate-weight: true;
 }
@@ -967,43 +1114,138 @@ init();
   --animate-weight: true;
 }</pre>
         <p>
-          The animation is shown if <code>--animate-weight-to</code> is set and differs from its current weight (vanilla
-          <code>font-weight</code> or <code>--animate-weight-from</code>).
+          The animation is shown if <code>--animate-weight-to</code> is set and
+          differs from its current weight (vanilla <code>font-weight</code> or
+          <code>--animate-weight-from</code>).
         </p>
         <p>
-          Set it on the element that holds the text itself. In <code>&lt;a&gt;&lt;span&gt;Home&lt;/span&gt;&lt;/a&gt;</code>,
-          set it on the <code>span</code>, not the <code>a</code>.
+          Set it on the element that holds the text itself. In
+          <code>&lt;a&gt;&lt;span&gt;Home&lt;/span&gt;&lt;/a&gt;</code>, set it
+          on the <code>span</code>, not the <code>a</code>.
         </p>
         <p>
-          Plain <code>letter-spacing</code> works and is kept. So do <code>text-transform</code>, <code>text-align</code>
-          (except <code>justify</code>), <code>font-variant</code>, <code>font-feature-settings</code>, right-to-left text and <code>vw</code> font sizes.
+          Plain <code>letter-spacing</code> works and is kept. So do
+          <code>text-transform</code>, <code>text-align</code> (except
+          <code>justify</code>), <code>font-variant</code>,
+          <code>font-feature-settings</code>, right-to-left text and
+          <code>vw</code> font sizes.
         </p>
         <table class="doc">
-          <tr><th>Property</th><th>Value</th><th>Default</th><th>Required</th></tr>
-          <tr><td><code>--animate-weight-from</code></td><td>Weight at rest.</td><td>The element's <code>font-weight</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-to</code></td><td>Weight when on.</td><td>none</td><td>yes</td></tr>
-          <tr><td><code>--animate-weight</code></td><td><code>true</code> or <code>false</code>. Inherited, so an ancestor can set it.</td><td><code>false</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-by</code></td><td><code>line</code> animates each line as one unit. <code>character</code> animates each character on its own.</td><td><code>line</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-delay</code></td><td>How long each unit waits after the one before it. Use it with <code>character</code> for a wave across the text, or with <code>line</code> for a wave down a block. Start with 5-20ms by character, 100ms+ by line.</td><td><code>0s</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-direction</code></td><td>Where the wave starts. See below.</td><td><code>start</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-duration</code></td><td>How long one unit takes to go from one weight to the other. With <code>prefers-reduced-motion: reduce</code>, duration and delay are set to <code>0s</code> and the weight changes at once.</td><td><code>300ms</code></td><td>no</td></tr>
-          <tr><td><code>--animate-weight-easing</code></td><td>Timing function of the wave.</td><td><code>linear</code></td><td>no</td></tr>
+          <tr>
+            <th>Property</th>
+            <th>Value</th>
+            <th>Default</th>
+            <th>Required</th>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-from</code></td>
+            <td>Weight at rest.</td>
+            <td>The element's <code>font-weight</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-to</code></td>
+            <td>Weight when on.</td>
+            <td>none</td>
+            <td>yes</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight</code></td>
+            <td>
+              <code>true</code> or <code>false</code>. Inherited, so an ancestor
+              can set it.
+            </td>
+            <td><code>false</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-by</code></td>
+            <td>
+              <code>line</code> animates each line as one unit.
+              <code>character</code> animates each character on its own.
+            </td>
+            <td><code>line</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-delay</code></td>
+            <td>
+              How long each unit waits after the one before it. Use it with
+              <code>character</code> for a wave across the text, or with
+              <code>line</code> for a wave down a block. Start with 5-20ms by
+              character, 100ms+ by line.
+            </td>
+            <td><code>0s</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-direction</code></td>
+            <td>Where the wave starts. See below.</td>
+            <td><code>start</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-duration</code></td>
+            <td>
+              How long one unit takes to go from one weight to the other. With
+              <code>prefers-reduced-motion: reduce</code>, duration and delay
+              are set to <code>0s</code> and the weight changes at once.
+            </td>
+            <td><code>300ms</code></td>
+            <td>no</td>
+          </tr>
+          <tr>
+            <td><code>--animate-weight-easing</code></td>
+            <td>Timing function of the wave.</td>
+            <td><code>linear</code></td>
+            <td>no</td>
+          </tr>
         </table>
         <h5><code>--animate-weight-direction</code></h5>
         <table class="doc">
-          <tr><th>Value</th><th>Wave starts at ...</th></tr>
-          <tr><td><code>start</code></td><td>the start of the text. In right-to-left text that is the right side. In line mode it is the first line.</td></tr>
-          <tr><td><code>end</code></td><td>the other end.</td></tr>
-          <tr><td><code>pointer</code></td><td>the side the pointer came in from, and the weight goes back from the side the pointer left by. The pointer only sets the direction. You still need <code>--animate-weight: true</code> on <code>:hover</code> or another state to turn it on.</td></tr>
-          <tr><td><code>scroll</code></td><td>the start when the page scrolls down, and the end when it scrolls up.</td></tr>
-          <tr><td><code>pointer scroll</code></td><td>whichever of the two moved last.</td></tr>
+          <tr>
+            <th>Value</th>
+            <th>Wave starts at ...</th>
+          </tr>
+          <tr>
+            <td><code>start</code></td>
+            <td>
+              the start of the text. In right-to-left text that is the right
+              side. In line mode it is the first line.
+            </td>
+          </tr>
+          <tr>
+            <td><code>end</code></td>
+            <td>the other end.</td>
+          </tr>
+          <tr>
+            <td><code>pointer</code></td>
+            <td>
+              the side the pointer came in from, and the weight goes back from
+              the side the pointer left by. The pointer only sets the direction.
+              You still need <code>--animate-weight: true</code> on
+              <code>:hover</code> or another state to turn it on.
+            </td>
+          </tr>
+          <tr>
+            <td><code>scroll</code></td>
+            <td>
+              the start when the page scrolls down, and the end when it scrolls
+              up.
+            </td>
+          </tr>
+          <tr>
+            <td><code>pointer scroll</code></td>
+            <td>whichever of the two moved last.</td>
+          </tr>
         </table>
         <h5>Markup</h5>
         <p>
-          The script splits the element into one span per line, and in character mode into one span per character.
-          Inline styles are left out here:
+          The script splits the element into one span per line, and in character
+          mode into one span per character. Inline styles are left out here:
         </p>
-        <pre class="language-html">&lt;!-- before --&gt;
+        <pre class="language-html">
+&lt;!-- before --&gt;
 &lt;a&gt;Foobar&lt;/a&gt;
 
 &lt;!-- by line --&gt;
@@ -1020,40 +1262,61 @@ init();
     ...
   &lt;/span&gt;
 &lt;/a&gt;</pre>
-        <p>Lines are fixed after measuring. They can get wider or narrower but do not rewrap until the next measurement.</p>
+        <p>
+          Lines are fixed after measuring. They can get wider or narrower but do
+          not rewrap until the next measurement.
+        </p>
         <h5>Known limitations</h5>
         <ul class="rows">
           <li>
-            Two weights only per element: from and to. A third state, like rest, hover and active, is not possible yet. PRs
-            welcome.
+            Two weights only per element: from and to. A third state, like rest,
+            hover and active, is not possible yet. PRs welcome.
           </li>
-          <li>Needs a variable font. Static fonts only have fixed weights, so the text jumps from one weight to the next.</li>
+          <li>
+            Needs a variable font. Static fonts only have fixed weights, so the
+            text jumps from one weight to the next.
+          </li>
           <li>Character mode drops ligatures.</li>
           <li>Line mode on long body text jitters in Firefox.</li>
-          <li><code>font-variation-settings</code> with <code>"wght"</code> overrides the weight, so nothing animates. Use <code>font-weight</code>.</li>
-          <li><code>text-align: justify</code> loses its stretch, because lines are fixed after measuring.</li>
+          <li>
+            <code>font-variation-settings</code> with
+            <code>"wght"</code> overrides the weight, so nothing animates. Use
+            <code>font-weight</code>.
+          </li>
+          <li>
+            <code>text-align: justify</code> loses its stretch, because lines
+            are fixed after measuring.
+          </li>
         </ul>
         <h4>JavaScript</h4>
         <h5>On page load</h5>
         <p>
-          This is enough for most pages. Call it once. It waits for the fonts, measures every animated element on the
-          page, and measures them again when the window width changes.
+          This is enough for most pages. Call it once. It waits for the fonts,
+          measures every animated element on the page, and measures them again
+          when the window width changes.
         </p>
         <pre class="language-js">init();</pre>
         <h5>Text added or changed after load</h5>
         <p>Measure the element again after you add it or replace its text.</p>
-        <pre class="language-js">const link = document.createElement("a");
+        <pre class="language-js">
+const link = document.createElement("a");
 link.textContent = "Foobar";
 nav.append(link);
 calibrate(link);</pre>
         <h5>New view in a single-page app</h5>
-        <p>Measure everything under the new view's root. Those elements are measured again on resize too.</p>
-        <pre class="language-js">calibrateAll(document.querySelector("main"));</pre>
+        <p>
+          Measure everything under the new view's root. Those elements are
+          measured again on resize too.
+        </p>
+        <pre class="language-js">
+calibrateAll(document.querySelector("main"));</pre>
         <h5>Known limitations</h5>
         <ul class="rows">
           <li>
-            The script measures again only when the window width changes. After a new font size, a new container width,
-            a new window height with <code>vh</code> font sizes or a font that loads late, call <code>calibrate(element)</code>.
+            The script measures again only when the window width changes. After
+            a new font size, a new container width, a new window height with
+            <code>vh</code> font sizes or a font that loads late, call
+            <code>calibrate(element)</code>.
           </li>
         </ul>
       </section>
@@ -1062,48 +1325,63 @@ calibrate(link);</pre>
         <h3>Extras</h3>
         <h4>Color</h4>
         <p>
-          Set <code>--animate-weight-color-from</code> or <code>--animate-weight-color-to</code> to change color along
-          with the weight. If you omit one or the other, it falls back to <code>currentColor</code> and uses whatever
-          color your own CSS already applies to that text:
+          Set <code>--animate-weight-color-from</code> or
+          <code>--animate-weight-color-to</code> to change color along with the
+          weight. If you omit one or the other, it falls back to
+          <code>currentColor</code> and uses whatever color your own CSS already
+          applies to that text:
         </p>
-        <pre class="language-css">.nav a {
+        <pre class="language-css">
+.nav a {
   --animate-weight-color-from: #1c1c1c;
   --animate-weight-color-to: #c8102e;
 }</pre>
-        <p>The color follows each unit's weight, so it uses the same duration, easing, delay, and direction.</p>
+        <p>
+          The color follows each unit's weight, so it uses the same duration,
+          easing, delay, and direction.
+        </p>
         <h4>Animate other properties</h4>
         <p>
-          Each <code>span.animate-text-weight-unit</code> has the CSS variable <code>--animate-weight-progress</code>, which
-          goes from <code>0</code> at <code>--animate-weight-from</code> to <code>1</code> at
-          <code>--animate-weight-to</code>. Use it in any CSS property to sync that property to the weight animation:
+          Each <code>span.animate-text-weight-unit</code> has the CSS variable
+          <code>--animate-weight-progress</code>, which goes from
+          <code>0</code> at <code>--animate-weight-from</code> to
+          <code>1</code> at <code>--animate-weight-to</code>. Use it in any CSS
+          property to sync that property to the weight animation:
         </p>
-        <pre class="language-css">/* change opacity from 60% to 100% */
+        <pre class="language-css">
+/* change opacity from 60% to 100% */
 .nav a .animate-text-weight-unit {
   opacity: calc(0.6 + 0.4 * var(--animate-weight-progress));
 }</pre>
         <p>
-          The CSS variable is set on the unit and is not inherited. Make sure to target <code>.animate-text-weight-unit</code>
-          itself, not the original element (<code>.nav a</code>). In character mode each character has its own
-          <code>span.animate-text-weight-unit</code> with its own value.
+          The CSS variable is set on the unit and is not inherited. Make sure to
+          target <code>.animate-text-weight-unit</code> itself, not the original
+          element (<code>.nav a</code>). In character mode each character has
+          its own <code>span.animate-text-weight-unit</code> with its own value.
         </p>
         <h4>Sticky one page navs</h4>
         <p>
-          An optional extra marks the nav link of the section in the middle of the screen with
-          <code>aria-current="true"</code>. A jump passes every section in between, one at a time, so one wave runs
-          through the nav. Each step waits until the wave has crossed that link: <code>--animate-weight-delay</code> once
-          per unit.
+          An optional extra marks the nav link of the section in the middle of
+          the screen with
+          <code>aria-current="true"</code>. A jump passes every section in
+          between, one at a time, so one wave runs through the nav. Each step
+          waits until the wave has crossed that link:
+          <code>--animate-weight-delay</code> once per unit.
         </p>
-        <pre class="language-js">import { waveNav } from "animate-text-weight/wave-nav";
+        <pre class="language-js">
+import { waveNav } from "animate-text-weight/wave-nav";
 
 waveNav(document.querySelectorAll(".nav a"));</pre>
-        <pre class="language-css">.nav a[aria-current="true"] {
+        <pre class="language-css">
+.nav a[aria-current="true"] {
   --animate-weight: true;
 }</pre>
         <p>
-          Each link's section is the element its <code>href="#id"</code> names. Pass
-          <code>{ linkClass: "active" }</code> or <code>{ sectionClass: "active" }</code> to also toggle a class on
-          the current link or its section.
-          <code>waveNav</code> returns a <code>stop()</code> function that removes its listeners.
+          Each link's section is the element its <code>href="#id"</code> names.
+          Pass <code>{ linkClass: "active" }</code> or
+          <code>{ sectionClass: "active" }</code> to also toggle a class on the
+          current link or its section. <code>waveNav</code> returns a
+          <code>stop()</code> function that removes its listeners.
         </p>
       </section>
 
@@ -1111,10 +1389,16 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         <h3>Under the hood</h3>
         <h4>Measurements</h4>
         <div id="measurements"></div>
-        <div class="label"><b>Difference in px</b> to the <i>from-weight</i> width, per line and weight</div>
+        <div class="label">
+          <b>Difference in px</b> to the <i>from-weight</i> width, per line and
+          weight
+        </div>
         <table id="log"></table>
         <h4>Without corrections</h4>
-        <div class="label">The bare font, <span id="scale-range"></span> at 60px: this is the shifting the script cancels</div>
+        <div class="label">
+          The bare font, <span id="scale-range"></span> at 60px: this is the
+          shifting the script cancels
+        </div>
         <div class="scale" id="scale"></div>
       </section>
 
@@ -1123,29 +1407,46 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         <p>Thanks for using animateTextWeight.</p>
         <p>
           It is free under the
-          <a href="https://github.com/timschoch/animateTextWeight/blob/main/LICENSE" target="_blank">MIT license</a>: use
-          it in any project, personal or commercial, change it and share it. Keep the license text with the code. It
-          comes with no warranty.
+          <a
+            href="https://github.com/timschoch/animateTextWeight/blob/main/LICENSE"
+            target="_blank"
+            >MIT license</a
+          >: use it in any project, personal or commercial, change it and share
+          it. Keep the license text with the code. It comes with no warranty.
         </p>
         <p>
           Found a bug or want a feature?
-          <a href="https://github.com/timschoch/animateTextWeight/issues" target="_blank">Open an issue</a> or, better,
-          send a pull request.
+          <a
+            href="https://github.com/timschoch/animateTextWeight/issues"
+            target="_blank"
+            >Open an issue</a
+          >
+          or, better, send a pull request.
         </p>
         <p>
-          If you appreciate the typographic beauty of animated text that doesn't break your design,
-          <a href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk" target="_blank">buy me a coffee</a>.
+          If you appreciate the typographic beauty of animated text that doesn't
+          break your design,
+          <a
+            href="https://revolut.me/hopefamily/pocket/x3dTEpx4pk"
+            target="_blank"
+            >buy me a coffee</a
+          >.
         </p>
         <p>
           I really enjoy seeing other designers' work and appreciate it if you
-          <a href="mailto:tim@timschoch.com">send me a link to any project that uses animateTextWeight</a>.
+          <a href="mailto:tim@timschoch.com"
+            >send me a link to any project that uses animateTextWeight</a
+          >.
         </p>
       </section>
 
       <section class="page-section" id="sec-foobar">
         <h3>Foobar</h3>
         <div class="foobar">
-          <img src="rickroll.png" alt="yes, im that old to find this funny. I wish you a wonderful day :)" />
+          <img
+            src="rickroll.png"
+            alt="yes, im that old to find this funny. I wish you a wonderful day :)"
+          />
           <p>
             Never gonna shift your line<br />
             Never gonna push you wide<br />
@@ -1155,18 +1456,26 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
             Never gonna track too tight and hurt you
           </p>
         </div>
-        <div class="label"><a href="#top">scroll to the top of the page</a></div>
+        <div class="label">
+          <a href="#top">scroll to the top of the page</a>
+        </div>
       </section>
     </div>
 
     <script type="module">
       // The core and the four languages the examples use, not the full bundle.
-      const cdn = "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es";
+      const cdn =
+        "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es";
       const { default: hljs } = await import(`${cdn}/core.min.js`);
       for (const name of ["bash", "css", "javascript", "xml"]) {
-        hljs.registerLanguage(name, (await import(`${cdn}/languages/${name}.min.js`)).default);
+        hljs.registerLanguage(
+          name,
+          (await import(`${cdn}/languages/${name}.min.js`)).default
+        );
       }
-      document.querySelectorAll("pre[class^=language-]").forEach((pre) => hljs.highlightElement(pre));
+      document
+        .querySelectorAll("pre[class^=language-]")
+        .forEach((pre) => hljs.highlightElement(pre));
     </script>
     <script type="module">
       // Run `pnpm build` first: the page imports the built script.
@@ -1208,7 +1517,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       };
 
       /** Family name from a Google Fonts CSS URL: family=Lora:ital,wght@... -> Lora. */
-      const familyOf = (url) => new URL(url).searchParams.get("family")?.split(":")[0] ?? "";
+      const familyOf = (url) =>
+        new URL(url).searchParams.get("family")?.split(":")[0] ?? "";
 
       // Example fonts, one button each: the family spec of a Google Fonts URL.
       const examples = [
@@ -1237,11 +1547,17 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       /** Mark the button of the loaded URL; make one first if none has it. */
       function selectButton(url) {
         const buttons = [...$("examples").querySelectorAll("button")];
-        const own = buttons.find((button) => button.dataset.url === url) ?? addButton(url, true);
-        for (const button of buttons) button.setAttribute("aria-pressed", "false");
+        const own =
+          buttons.find((button) => button.dataset.url === url) ??
+          addButton(url, true);
+        for (const button of buttons)
+          button.setAttribute("aria-pressed", "false");
         own.setAttribute("aria-pressed", "true");
       }
-      for (const spec of examples) addButton(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
+      for (const spec of examples)
+        addButton(
+          `https://fonts.googleapis.com/css2?family=${spec}&display=swap`
+        );
       selectButton(fontUrl.value);
 
       /*
@@ -1264,17 +1580,30 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       /** The from and to lists and the drift scale, for one weight range. */
       function buildRange({ min, max }) {
         const weights = [];
-        for (let weight = Math.ceil(min / 100) * 100; weight <= max; weight += 100) weights.push(weight);
+        for (
+          let weight = Math.ceil(min / 100) * 100;
+          weight <= max;
+          weight += 100
+        )
+          weights.push(weight);
         if (weights[0] !== min) weights.unshift(min);
         if (weights.at(-1) !== max) weights.push(max);
         // What was picked by hand, or the nearest this font has. Both landing on
         // one weight would animate nothing, so then the whole range instead.
-        const nearest = (want) => weights.reduce((closest, weight) => (Math.abs(weight - want) < Math.abs(closest - want) ? weight : closest));
+        const nearest = (want) =>
+          weights.reduce((closest, weight) =>
+            Math.abs(weight - want) < Math.abs(closest - want)
+              ? weight
+              : closest
+          );
         let chosen = [nearest(picked[0] ?? min), nearest(picked[1] ?? max)];
         if (chosen[0] === chosen[1]) chosen = [min, max];
         for (const [index, sel] of selects.entries()) {
           sel.replaceChildren();
-          for (const weight of weights) sel.add(new Option(weight, weight, false, weight === chosen[index]));
+          for (const weight of weights)
+            sel.add(
+              new Option(weight, weight, false, weight === chosen[index])
+            );
         }
         $("scale-range").textContent = `${min} to ${max}`;
         const live = document.createElement("div");
@@ -1311,18 +1640,28 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       /** The easing set on the preview, as a function of time 0 to 1. */
       function easing() {
         const named = { linear: [0, 0, 1, 1], ease: [0.25, 0.1, 0.25, 1] };
-        const curve = getComputedStyle(preview).getPropertyValue("--animate-weight-easing").trim();
+        const curve = getComputedStyle(preview)
+          .getPropertyValue("--animate-weight-easing")
+          .trim();
         const found = curve.match(/-?[\d.]+/g);
-        const [x1, y1, x2, y2] = named[curve] ?? (found?.length === 4 ? found.map(Number) : named.ease);
+        const [x1, y1, x2, y2] =
+          named[curve] ??
+          (found?.length === 4 ? found.map(Number) : named.ease);
         // Newton on the x curve, then read y. Eight rounds is plenty at this size.
-        const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
-        const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+        const cx = 3 * x1,
+          bx = 3 * (x2 - x1) - cx,
+          ax = 1 - cx - bx;
+        const cy = 3 * y1,
+          by = 3 * (y2 - y1) - cy,
+          ay = 1 - cy - by;
         return (time) => {
           let parameter = time;
           for (let round = 0; round < 8; round++) {
             const slope = (3 * ax * parameter + 2 * bx) * parameter + cx;
             if (Math.abs(slope) < 1e-6) break;
-            parameter -= (((ax * parameter + bx) * parameter + cx) * parameter - time) / slope;
+            parameter -=
+              (((ax * parameter + bx) * parameter + cx) * parameter - time) /
+              slope;
           }
           return ((ay * parameter + by) * parameter + cy) * parameter;
         };
@@ -1330,7 +1669,11 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
 
       /** Every unit at the same progress: one stop, the way a rest state looks. */
       function stop(units, index, count) {
-        for (const unit of units) unit.style.setProperty("--animate-weight-progress", (index / (count - 1)).toFixed(4));
+        for (const unit of units)
+          unit.style.setProperty(
+            "--animate-weight-progress",
+            (index / (count - 1)).toFixed(4)
+          );
       }
 
       /**
@@ -1339,18 +1682,32 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        * does it.
        */
       function wave(units, index, count) {
-        const ms = (value) => parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000);
-        const duration = ms(getComputedStyle(preview).getPropertyValue("--animate-weight-duration"));
+        const ms = (value) =>
+          parseFloat(value) * (value.trim().endsWith("ms") ? 1 : 1000);
+        const duration = ms(
+          getComputedStyle(preview).getPropertyValue(
+            "--animate-weight-duration"
+          )
+        );
         const ease = easing();
         // Each unit's wait as the browser worked it out, read off the live
         // preview: the clones have their transition switched off, and the
         // direction is already in this number.
         const live = [...preview.querySelectorAll(`.${UNIT}`)];
-        const delays = units.map((_, unitIndex) => ms(getComputedStyle(live[unitIndex]).transitionDelay));
-        const elapsed = ((duration + Math.max(...delays, 0)) * index) / (count - 1);
+        const delays = units.map((_, unitIndex) =>
+          ms(getComputedStyle(live[unitIndex]).transitionDelay)
+        );
+        const elapsed =
+          ((duration + Math.max(...delays, 0)) * index) / (count - 1);
         units.forEach((unit, unitIndex) => {
-          const progress = Math.min(Math.max((elapsed - delays[unitIndex]) / duration, 0), 1);
-          unit.style.setProperty("--animate-weight-progress", ease(progress).toFixed(4));
+          const progress = Math.min(
+            Math.max((elapsed - delays[unitIndex]) / duration, 0),
+            1
+          );
+          unit.style.setProperty(
+            "--animate-weight-progress",
+            ease(progress).toFixed(4)
+          );
         });
       }
 
@@ -1371,21 +1728,33 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       }
 
       function update() {
-        const [width, size, spacing] = fields.map((field) => Number(field.value));
+        const [width, size, spacing] = fields.map((field) =>
+          Number(field.value)
+        );
         document.documentElement.style.setProperty("--w", `${width}px`);
         document.documentElement.style.setProperty("--s", `${size}px`);
         // Caps change every width, so everything animated measures again.
         document.documentElement.style.setProperty("--case", $("case").value);
-        for (const element of document.querySelectorAll("h1, .about-links a")) calibrate(element);
+        for (const element of document.querySelectorAll("h1, .about-links a"))
+          calibrate(element);
         preview.innerText = source.innerText; // innerText keeps a typed line break as <br>
         preview.style.letterSpacing = `${spacing}px`; // set from outside, like a site would
         preview.style.fontWeight = selects[0].value;
         preview.style.setProperty("--animate-weight-to", selects[1].value);
         preview.style.setProperty("--animate-weight-by", $("by").value);
-        preview.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
-        preview.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
+        preview.style.setProperty(
+          "--animate-weight-delay",
+          `${$("delay").value}ms`
+        );
+        preview.style.setProperty(
+          "--animate-weight-duration",
+          `${$("duration").value}ms`
+        );
         setColor(preview); // before the clones below, so they carry it
-        preview.style.setProperty("--animate-weight-direction", $("direction").value);
+        preview.style.setProperty(
+          "--animate-weight-direction",
+          $("direction").value
+        );
         buildPage();
 
         // The script splits the preview into line spans and writes each
@@ -1410,7 +1779,14 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
             unit.style.setProperty("--animate-weight-progress", at);
           }
           const spans = [...probe.querySelectorAll(`.${LINE}`)];
-          offBy.set(weight, spans.map((span, lineIndex) => span.getBoundingClientRect().width - calibration.lines[lineIndex].target));
+          offBy.set(
+            weight,
+            spans.map(
+              (span, lineIndex) =>
+                span.getBoundingClientRect().width -
+                calibration.lines[lineIndex].target
+            )
+          );
         });
 
         // One row per line: how far off its from-weight width it is, at each stop.
@@ -1420,8 +1796,13 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
             .map(
               (line, index) =>
                 `<tr><td class="line" title="${line.text}">${line.text}</td>` +
-                calibration.weights.map((weight) => `<td class="num">${offBy.get(weight)[index].toFixed(2)}</td>`).join("") +
-                `</tr>`,
+                calibration.weights
+                  .map(
+                    (weight) =>
+                      `<td class="num">${offBy.get(weight)[index].toFixed(2)}</td>`
+                  )
+                  .join("") +
+                `</tr>`
             )
             .join("");
       }
@@ -1448,7 +1829,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       const traceRows = $("trace-rows");
       // A question mark, not NaN: a reading that could not be taken is worth
       // telling apart from a reading that disagrees.
-      const pad = (value) => (Number.isFinite(value) ? String(Math.round(value)) : "?").padStart(4);
+      const pad = (value) =>
+        (Number.isFinite(value) ? String(Math.round(value)) : "?").padStart(4);
       /** How long after a crossing the wave is read. */
       const LOOK = 80;
       /*
@@ -1457,7 +1839,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
        * numbers whichever way round it runs, so only which one comes first says
        * anything. Falling is a wave from the start, rising one from the end.
        */
-      const part = (value) => (Number.isFinite(value) ? value.toFixed(2) : "?").padStart(5);
+      const part = (value) =>
+        (Number.isFinite(value) ? value.toFixed(2) : "?").padStart(5);
       const parts = (values) => `${part(values[0])}..${part(values.at(-1))}`;
       // How each column looks, taken off its heading rather than said twice:
       // the heading is where a column is named, so let it be where a column is
@@ -1495,7 +1878,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // it. The flip is inverted while the pair is running back down, so
       // --atw-way has to be read with it to get back to an end.
       const endOf = (element, wave) => {
-        const flip = element.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
+        const flip =
+          element.style.getPropertyValue(`--atw-flip-${wave}`) || "0";
         const down = element.style.getPropertyValue("--atw-way") === "-1";
         return (flip === "1") !== down ? "end" : "start";
       };
@@ -1506,7 +1890,9 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // transition does not move the value it is showing.
       const freeNow = (element, wave) =>
         [...element.querySelectorAll(`.${LINE}`)].every((line) => {
-          const at = Number(getComputedStyle(line).getPropertyValue(`--atw-wave-${wave}`));
+          const at = Number(
+            getComputedStyle(line).getPropertyValue(`--atw-wave-${wave}`)
+          );
           return at < 0.02 || at > 0.98;
         });
 
@@ -1543,7 +1929,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
           cursorBox.style.left = `${event.clientX}px`;
           cursorBox.style.top = `${event.clientY}px`;
         },
-        { passive: true },
+        { passive: true }
       );
 
       // Every crossing still on show, as JSON, newest first. The cells are
@@ -1581,12 +1967,16 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         // No verdict at all on the aim of a wave that was mid-crossing, which
         // the library leaves alone on purpose: an end moved there re-sorts the
         // line in a frame. It keeps the end it had, and that is not a miss.
-        const says = (pair, ok) => Object.fromEntries(pair.map((name) => [name, ok ? "ok" : "bad"]));
+        const says = (pair, ok) =>
+          Object.fromEntries(pair.map((name) => [name, ok ? "ok" : "bad"]));
         const verdict = {
-          ...(free ? says(TRACE_AIM, cells["wave from"] === aimFor(cells)) : {}),
+          ...(free
+            ? says(TRACE_AIM, cells["wave from"] === aimFor(cells))
+            : {}),
           ...says(TRACE_RUN, ran === ranFrom(cells)),
         };
-        const mark = (name, index) => [traceLooks[index], verdict[name] ?? ""].join(" ").trim();
+        const mark = (name, index) =>
+          [traceLooks[index], verdict[name] ?? ""].join(" ").trim();
 
         const row = document.createElement("tr");
         Object.entries(cells).forEach(([name, cell], index) => {
@@ -1610,7 +2000,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
             dd.textContent = String(value).trim();
             dd.className = mark(name, index);
             return [dt, dd];
-          }),
+          })
         );
       }
 
@@ -1635,7 +2025,9 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
             const pageX = Math.round(event.pageX);
             // The moment the crossing happened, not the moment it was read a
             // tick later, and the event carries it already.
-            const at = new Date(performance.timeOrigin + event.timeStamp).toISOString();
+            const at = new Date(
+              performance.timeOrigin + event.timeStamp
+            ).toISOString();
             // Each crossing aims one wave: coming in the leading one, going
             // out the trailing one. Whether that wave was free to be aimed can
             // only be seen now, before it has moved on.
@@ -1649,7 +2041,11 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
               const mid = box.left + scrollX + box.width / 2;
               const units = [...element.querySelectorAll(`.${UNIT}`)];
               const run = units.map((unit) =>
-                Number(getComputedStyle(unit).getPropertyValue("--animate-weight-progress")),
+                Number(
+                  getComputedStyle(unit).getPropertyValue(
+                    "--animate-weight-progress"
+                  )
+                )
               );
               // One moment for both: the end goes in on the crossing itself
               // now, so there is nothing left to wait for. Waiting would also
@@ -1668,7 +2064,7 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
                 },
                 at,
                 ran,
-                free,
+                free
               );
             }, LOOK);
           });
@@ -1697,14 +2093,26 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
           for (const element of elements) {
             element.style.fontWeight = selects[0].value;
             element.style.setProperty("--animate-weight-to", selects[1].value);
-            element.style.setProperty("--animate-weight-delay", `${$("delay").value}ms`);
-            element.style.setProperty("--animate-weight-duration", `${$("duration").value}ms`);
+            element.style.setProperty(
+              "--animate-weight-delay",
+              `${$("delay").value}ms`
+            );
+            element.style.setProperty(
+              "--animate-weight-duration",
+              `${$("duration").value}ms`
+            );
             setColor(element);
             // The nav keeps its own size and stays a nav: by character, and
             // following both, so hover it and the pointer has the say, scroll
             // under it and the page does.
-            element.style.setProperty("--animate-weight-by", heading ? $("by").value : "character");
-            element.style.setProperty("--animate-weight-direction", heading ? $("direction").value : "pointer scroll");
+            element.style.setProperty(
+              "--animate-weight-by",
+              heading ? $("by").value : "character"
+            );
+            element.style.setProperty(
+              "--animate-weight-direction",
+              heading ? $("direction").value : "pointer scroll"
+            );
             // The sandbox's button and link keep their own size.
             if (elements === stops) element.style.fontSize = `${size}px`;
             calibrate(element);
@@ -1722,7 +2130,8 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       // The nav crossings go into the same read-out. A link is the short case
       // the eye can check against the numbers: a handful of letters, one line,
       // and a middle a pointer crosses on purpose.
-      for (const navLink of navLinks) traceCrossings(navLink, navLink.textContent.trim());
+      for (const navLink of navLinks)
+        traceCrossings(navLink, navLink.textContent.trim());
 
       /*
        * The jumps, scrolled by hand at a pace that can be watched.
@@ -1749,7 +2158,14 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
         const step = (now) => {
           const progress = Math.min(1, (now - began) / ms);
           // Slow at both ends, so neither the start nor the stop is a jolt.
-          scrollTo(0, from + by * (progress < 0.5 ? 2 * progress * progress : 1 - 2 * (1 - progress) ** 2));
+          scrollTo(
+            0,
+            from +
+              by *
+                (progress < 0.5
+                  ? 2 * progress * progress
+                  : 1 - 2 * (1 - progress) ** 2)
+          );
           if (progress < 1) requestAnimationFrame(step);
         };
         requestAnimationFrame(step);
@@ -1758,24 +2174,32 @@ waveNav(document.querySelectorAll(".nav a"));</pre>
       sliders.forEach((slider, index) => link(slider, fields[index], update));
       // The example's column takes the new width only when the slider is let
       // go, so the controls beside it do not jump on every step of a drag.
-      const fitColumn = () => document.documentElement.style.setProperty("--w-col", `${fields[0].value}px`);
-      for (const element of [sliders[0], fields[0]]) element.addEventListener("change", fitColumn);
+      const fitColumn = () =>
+        document.documentElement.style.setProperty(
+          "--w-col",
+          `${fields[0].value}px`
+        );
+      for (const element of [sliders[0], fields[0]])
+        element.addEventListener("change", fitColumn);
       sliders[0].addEventListener("dblclick", fitColumn);
       fitColumn();
       // The tween needs no new measurement for these, but the frozen wave
       // below it is drawn from them and has to be drawn again.
-      for (const id of ["delay", "duration"]) link($(id), $(id).nextElementSibling, update);
+      for (const id of ["delay", "duration"])
+        link($(id), $(id).nextElementSibling, update);
       selects.forEach((select, index) =>
         select.addEventListener("change", () => {
           picked[index] = Number(select.value);
           update();
-        }),
+        })
       );
       $("by").addEventListener("change", update);
-      for (const id of ["color", "color-from", "color-to"]) $(id).addEventListener("change", update);
+      for (const id of ["color", "color-from", "color-to"])
+        $(id).addEventListener("change", update);
       // The two colors only matter when the color is on. Run once too: a
       // reload can bring the select back as "on".
-      const showColorEnds = () => ($("color-ends").hidden = $("color").value === "off");
+      const showColorEnds = () =>
+        ($("color-ends").hidden = $("color").value === "off");
       $("color").addEventListener("change", showColorEnds);
       showColorEnds();
       $("direction").addEventListener("change", update);
