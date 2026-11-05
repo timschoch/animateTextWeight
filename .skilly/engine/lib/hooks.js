@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { HUB_REPO, LEFTHOOK_VERSION } from './constants.js';
-import * as lockfile from './lockfile.js';
+import { HUB_REPO, LEFTHOOK_VERSION, PNPM_VERSION } from './constants.js';
+import * as packageManager from './package-manager.js';
 import { selfSource } from './self-source.js';
 
 // The two hook mergers (ADR-0008 decision 22). A Bundle declares its hook
@@ -40,9 +40,14 @@ const EXTENDS_ITEM = '- .skilly/lefthook.json';
 const LEFTHOOK_FILES = ['lefthook.yml', 'lefthook.yaml', '.lefthook.yml', '.lefthook.yaml'];
 const SETTINGS = join('.claude', 'settings.json');
 // husky leaves core.hooksPath set; plain `lefthook install` refuses to run then. `lefthook install`
-// fails with no .git, as in a container build, so it runs only in a checkout. The parentheses keep
-// the `||` from hiding a failure of a command before it.
-const LEFTHOOK_INSTALL = '(test ! -e .git || lefthook install --reset-hooks-path)';
+// fails with no .git, as in a container build, so it runs only in a checkout. A host build can have
+// a .git but no lefthook, so it also runs only when lefthook is there. The parentheses keep the `||`
+// from hiding a failure of a command before it.
+const LEFTHOOK_INSTALL = '(test ! -e .git || ! command -v lefthook >/dev/null || lefthook install --reset-hooks-path)';
+// The install with no lefthook check that some Consumers carry. The Sync replaces it with LEFTHOOK_INSTALL.
+const LEFTHOOK_INSTALL_UNCHECKED = '(test ! -e .git || lefthook install --reset-hooks-path)';
+// A bare install as a whole command of `prepare`, with no guard at all. The Sync replaces it with LEFTHOOK_INSTALL.
+const LEFTHOOK_INSTALL_BARE = /(^|&&|;)(\s*)lefthook install(?: --reset-hooks-path)?(?=\s*(?:&&|;|$))/g;
 const HUSKY_COMMAND = 'husky';
 const HUSKY_DIR = '.husky';
 // husky as a word or a path part: `npx husky install`, `./.husky/x`, which the Sync deletes,
@@ -57,7 +62,7 @@ export const HOOK_PATHS = [
   HUSKY_DIR,
   'package.json',
   PNPM_WORKSPACE,
-  ...lockfile.LOCKFILES,
+  ...packageManager.LOCKFILES,
 ];
 
 const readJson = (path, fallback) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : fallback);
@@ -233,10 +238,13 @@ export function mergePackageJson(manifest) {
     const byName = ([first], [second]) => first.localeCompare(second);
     merged.devDependencies = Object.fromEntries(Object.entries(devDependencies).sort(byName));
   }
-  const prepare = merged.scripts?.prepare;
+  const prepare = merged.scripts?.prepare
+    ?.replaceAll(LEFTHOOK_INSTALL_UNCHECKED, LEFTHOOK_INSTALL)
+    .replace(LEFTHOOK_INSTALL_BARE, `$1$2${LEFTHOOK_INSTALL}`);
   if (!prepare) merged.scripts = { ...merged.scripts, prepare: LEFTHOOK_INSTALL };
   else if (HUSKY_PREPARE.test(prepare)) merged.scripts.prepare = replaceHuskyCommands(prepare);
   else if (!/\blefthook\b/.test(prepare)) merged.scripts.prepare = `${prepare} && ${LEFTHOOK_INSTALL}`;
+  else merged.scripts.prepare = prepare;
   return JSON.stringify(merged) === JSON.stringify(manifest) ? manifest : merged;
 }
 
@@ -271,11 +279,14 @@ const namesPnpm11 = ({ packageManager }) => Number(/^pnpm@(\d+)/.exec(packageMan
  * .skilly/lefthook.json, into lefthook.yml. Moves a husky Consumer to lefthook.
  * A changed package.json gets its lockfile refreshed. The Hub wires engine/ itself.
  *
- * A pnpm Consumer's pnpm-workspace.yaml gets lefthook in `allowBuilds`. A new file is written only
- * for pnpm 11 or higher in `packageManager`: pnpm below 11 does not fail an install on an unapproved
- * build script, and pnpm 9.15 and 10.0 fail on a file with no `packages`.
+ * A package.json that names no package manager, in a repo with no lockfile, gets pnpm in
+ * `packageManager`. The refresh then creates pnpm-lock.yaml.
+ *
+ * A pnpm-workspace.yaml gets lefthook in `allowBuilds`. A new file is written only for pnpm 11 or
+ * higher in `packageManager`: pnpm below 11 does not fail an install on an unapproved build script,
+ * and pnpm 9.15 and 10.0 fail on a file with no `packages`.
  */
-export function writeHooks(cwd, { bundles, bundlesDir, refreshLock = lockfile.refreshLock }) {
+export function writeHooks(cwd, { bundles, bundlesDir, refreshLock = packageManager.refreshLock }) {
   if (selfSource(cwd)?.toLowerCase() === HUB_REPO) return;
   const { lefthook, claude } = hookEntries(bundles, bundlesDir);
   // It throws on a husky clash, so it runs before the first write.
@@ -284,19 +295,21 @@ export function writeHooks(cwd, { bundles, bundlesDir, refreshLock = lockfile.re
   const settingsPath = join(cwd, SETTINGS);
   const settings = readJson(settingsPath, null);
   if (settings || Object.keys(claude).length) writeChanged(settingsPath, toJson(mergeClaudeSettings(settings ?? {}, claude)));
-  if (!lefthookFile) return;
-  writeChanged(join(cwd, SKILLY_LEFTHOOK), toJson(lefthook));
-  writeChanged(lefthookFile.path, lefthookFile.text);
-  rmSync(join(cwd, HUSKY_DIR), { recursive: true, force: true });
+  if (lefthookFile) {
+    writeChanged(join(cwd, SKILLY_LEFTHOOK), toJson(lefthook));
+    writeChanged(lefthookFile.path, lefthookFile.text);
+    rmSync(join(cwd, HUSKY_DIR), { recursive: true, force: true });
+  }
 
   const packagePath = join(cwd, 'package.json');
   if (!existsSync(packagePath)) return;
   const manifest = readJson(packagePath);
-  const merged = mergePackageJson(manifest);
-  if (existsSync(join(cwd, 'pnpm-lock.yaml'))) {
+  const named = packageManager.namesNoPackageManager(cwd, manifest) ? { ...manifest, packageManager: `pnpm@${PNPM_VERSION}` } : manifest;
+  const merged = lefthookFile ? mergePackageJson(named) : named;
+  if (lefthookFile) {
     const workspacePath = join(cwd, PNPM_WORKSPACE);
     if (existsSync(workspacePath)) writeChanged(workspacePath, mergePnpmWorkspace(readFileSync(workspacePath, 'utf8')));
-    else if (namesPnpm11(manifest)) writeChanged(workspacePath, mergePnpmWorkspace(''));
+    else if (namesPnpm11(named)) writeChanged(workspacePath, mergePnpmWorkspace(''));
   }
   if (merged !== manifest && writeChanged(packagePath, toJson(merged))) refreshLock(cwd);
 }

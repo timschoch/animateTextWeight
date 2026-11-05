@@ -7,3 +7,6 @@ export const HUB_OWNERS = ['timschoch', 'admin-laicadev', 'swissdesign-md', 'Hab
 // The lefthook a Consumer gets when it has none. Dependabot moves it from there. An exact version
 // with publish proof: pnpm `trustPolicy: no-downgrade` refuses 2.2.2, and a range would resolve to it.
 export const LEFTHOOK_VERSION = '2.2.1';
+// The pnpm a Consumer gets in `packageManager` when it names no package manager and has no
+// lockfile. pnpm, not npm: its one store serves every worktree, npm fills each with node_modules.
+export const PNPM_VERSION = '12.16.1';

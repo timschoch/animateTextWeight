@@ -29,7 +29,7 @@
     "build": "tsc",
     "test": "tsc && node --test test/band.test.mjs test/waves.test.mjs",
     "test:browser": "tsc && node --test test/*.browser.test.mjs",
-    "prepare": "lefthook install --reset-hooks-path && tsc",
+    "prepare": "(test ! -e .git || ! command -v lefthook >/dev/null || lefthook install --reset-hooks-path) && tsc",
     "demo": "tsc && npx -y serve -l 3000 .",
     "compare": "tsc && node scripts/compare.mjs"
   },
