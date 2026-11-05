@@ -9,6 +9,7 @@
     "url": "git+https://github.com/timschoch/animateTextWeight.git"
   },
   "type": "module",
+  "packageManager": "pnpm@11.0.8",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
