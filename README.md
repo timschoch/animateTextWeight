@@ -16,7 +16,7 @@ Or run it locally:
 
 ```sh
 # http://localhost:3000/demo/
-npm run demo
+pnpm demo
 ```
 
 ## Use

@@ -4,13 +4,14 @@ Public npm package. Keep changes minimal — no internal-project scaffolding bey
 
 ## Commands
 
-- `npm run build` — compile `src` to `dist` (tsc)
-- `npm run demo` — build, then serve `demo/` at `http://localhost:3000/demo/`
-- `npm run prepare` — husky setup + build (runs on install/publish)
+- `pnpm build` — compile `src` to `dist` (tsc)
+- `pnpm demo` — build, then serve `demo/` at `http://localhost:3000/demo/`
+- `pnpm test` — unit tests; `pnpm test:browser` — browser tests
+- `pnpm prepare` — lefthook setup + build (runs on install/publish)
 
 ## Rules
 
-- Conventional commits and branch-protection are enforced by git hooks (`.husky/commit-msg`, `.husky/pre-push`) — the scripts live in `.agents/skills/verify/scripts/` (synced by skilly, never edit them here).
+- Conventional commits and branch-protection are enforced by lefthook git hooks (`lefthook.yml` extends `.skilly/lefthook.json`) — the scripts live in `.skilly/engine/verify/` (synced by skilly, never edit them here).
 - Pre-commit runs Prettier via lint-staged (`.lintstagedrc`).
 - `dist/` is gitignored — it is built by `prepare`, not committed.
 
