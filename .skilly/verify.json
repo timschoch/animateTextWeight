@@ -1,0 +1,18 @@
+{
+  "stages": {
+    "ci": {
+      "steps": [
+        {
+          "name": "node test",
+          "run": "pnpm test",
+          "why": "The unit tests run on node --test, not vitest, so the default unit steps skip them."
+        },
+        {
+          "name": "browser test",
+          "run": "pnpm test:browser",
+          "why": "Puppeteer measures the real layout in Chrome. The runner has Chrome installed."
+        }
+      ]
+    }
+  }
+}
