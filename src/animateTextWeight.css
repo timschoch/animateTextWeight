@@ -220,7 +220,10 @@
    */
   --atw-span: max(
     1ms,
-    calc(var(--atw-delay-total) * var(--animate-weight-delay) + var(--animate-weight-duration))
+    calc(
+      var(--atw-delay-total) * var(--animate-weight-delay) +
+        var(--animate-weight-duration)
+    )
   );
   /*
    * The script's own switches, in their own properties rather than in
@@ -237,7 +240,8 @@
    */
   transition:
     --atw-wave-in var(--atw-span) var(--animate-weight-easing),
-    --atw-wave-out var(--atw-span) var(--animate-weight-easing) var(--atw-out-wait, 0s),
+    --atw-wave-out var(--atw-span) var(--animate-weight-easing)
+      var(--atw-out-wait, 0s),
     --atw-on 1ms;
   /* A line can get wider or narrower, never reflow. */
   white-space: nowrap;
@@ -308,15 +312,24 @@
   flex-basis: calc(
     var(--atw-w-0) + (var(--atw-w-1) - var(--atw-w-0)) *
       clamp(0, var(--animate-weight-progress) * 10 - 0, 1) +
-      (var(--atw-w-2) - var(--atw-w-1)) * clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
-      (var(--atw-w-3) - var(--atw-w-2)) * clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
-      (var(--atw-w-4) - var(--atw-w-3)) * clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
-      (var(--atw-w-5) - var(--atw-w-4)) * clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
-      (var(--atw-w-6) - var(--atw-w-5)) * clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
-      (var(--atw-w-7) - var(--atw-w-6)) * clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
-      (var(--atw-w-8) - var(--atw-w-7)) * clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
-      (var(--atw-w-9) - var(--atw-w-8)) * clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
-      (var(--atw-w-10) - var(--atw-w-9)) * clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
+      (var(--atw-w-2) - var(--atw-w-1)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
+      (var(--atw-w-3) - var(--atw-w-2)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
+      (var(--atw-w-4) - var(--atw-w-3)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
+      (var(--atw-w-5) - var(--atw-w-4)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
+      (var(--atw-w-6) - var(--atw-w-5)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
+      (var(--atw-w-7) - var(--atw-w-6)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
+      (var(--atw-w-8) - var(--atw-w-7)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
+      (var(--atw-w-9) - var(--atw-w-8)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
+      (var(--atw-w-10) - var(--atw-w-9)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
   );
 }
 
@@ -355,13 +368,15 @@
     (
         var(--atw-delay-count) + var(--atw-flip-in) *
           (var(--atw-delay-total) - 2 * var(--atw-delay-count))
-      ) * var(--animate-weight-delay)
+      ) *
+      var(--animate-weight-delay)
   );
   --atw-wait-out: calc(
     (
         var(--atw-delay-count) + var(--atw-flip-out) *
           (var(--atw-delay-total) - 2 * var(--atw-delay-count))
-      ) * var(--animate-weight-delay)
+      ) *
+      var(--animate-weight-delay)
   );
   /*
    * tan(atan2(a, b)) is a / b. A time over a time is typed arithmetic, which
@@ -419,7 +434,8 @@
 .animate-text-weight-unit {
   color: color-mix(
     in oklab,
-    var(--animate-weight-color-to, currentColor) calc(clamp(0, var(--animate-weight-progress), 1) * 100%),
+    var(--animate-weight-color-to, currentColor)
+      calc(clamp(0, var(--animate-weight-progress), 1) * 100%),
     var(--animate-weight-color-from, currentColor)
   );
 }
@@ -434,15 +450,24 @@
   letter-spacing: calc(
     var(--atw-ls-0) + (var(--atw-ls-1) - var(--atw-ls-0)) *
       clamp(0, var(--animate-weight-progress) * 10 - 0, 1) +
-      (var(--atw-ls-2) - var(--atw-ls-1)) * clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
-      (var(--atw-ls-3) - var(--atw-ls-2)) * clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
-      (var(--atw-ls-4) - var(--atw-ls-3)) * clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
-      (var(--atw-ls-5) - var(--atw-ls-4)) * clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
-      (var(--atw-ls-6) - var(--atw-ls-5)) * clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
-      (var(--atw-ls-7) - var(--atw-ls-6)) * clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
-      (var(--atw-ls-8) - var(--atw-ls-7)) * clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
-      (var(--atw-ls-9) - var(--atw-ls-8)) * clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
-      (var(--atw-ls-10) - var(--atw-ls-9)) * clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
+      (var(--atw-ls-2) - var(--atw-ls-1)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 1, 1) +
+      (var(--atw-ls-3) - var(--atw-ls-2)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 2, 1) +
+      (var(--atw-ls-4) - var(--atw-ls-3)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 3, 1) +
+      (var(--atw-ls-5) - var(--atw-ls-4)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 4, 1) +
+      (var(--atw-ls-6) - var(--atw-ls-5)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 5, 1) +
+      (var(--atw-ls-7) - var(--atw-ls-6)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 6, 1) +
+      (var(--atw-ls-8) - var(--atw-ls-7)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 7, 1) +
+      (var(--atw-ls-9) - var(--atw-ls-8)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 8, 1) +
+      (var(--atw-ls-10) - var(--atw-ls-9)) *
+      clamp(0, var(--animate-weight-progress) * 10 - 9, 1)
   );
 }
 

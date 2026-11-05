@@ -1,3 +1,8 @@
+# Written by tools: pnpm, release-please, the skilly Sync (timschoch/skilly#331)
+pnpm-lock.yaml
+CHANGELOG.md
+.github/workflows/ci.yml
+
 # skilly-owned files
 .skilly.json
 skills-lock.json

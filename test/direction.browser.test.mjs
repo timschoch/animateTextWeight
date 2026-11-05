@@ -13,11 +13,11 @@ const progress = (page, id) =>
   page.evaluate(
     (id) =>
       Number(
-        getComputedStyle(document.querySelector(`#${id} > h3 .animate-text-weight-unit`)).getPropertyValue(
-          "--animate-weight-progress",
-        ),
+        getComputedStyle(
+          document.querySelector(`#${id} > h3 .animate-text-weight-unit`)
+        ).getPropertyValue("--animate-weight-progress")
       ),
-    id,
+    id
   );
 
 test("a heading switched from pointer to scroll still goes light", async () => {
@@ -27,11 +27,16 @@ test("a heading switched from pointer to scroll still goes light", async () => {
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
     await page.goto(`${server.url}/demo/index.html`);
-    await page.waitForSelector("#sec-about.active > h3 .animate-text-weight-unit");
+    await page.waitForSelector(
+      "#sec-about.active > h3 .animate-text-weight-unit"
+    );
     await page.select("#direction", "scroll");
     await page.evaluate(() => {
       const use = document.querySelector("#sec-use");
-      scrollTo(0, use.getBoundingClientRect().top + scrollY - innerHeight / 2 + 50);
+      scrollTo(
+        0,
+        use.getBoundingClientRect().top + scrollY - innerHeight / 2 + 50
+      );
     });
     await new Promise((resolve) => setTimeout(resolve, 1500));
     assert.equal(await progress(page, "sec-about"), 0, "About let go");
@@ -55,7 +60,9 @@ test("a heading switched on for a frame in scroll mode still waves", async () =>
     const page = await browser.newPage();
     await page.setViewport({ width: 1400, height: 900 });
     await page.goto(`${server.url}/demo/index.html`);
-    await page.waitForSelector("#sec-about.active > h3 .animate-text-weight-unit");
+    await page.waitForSelector(
+      "#sec-about.active > h3 .animate-text-weight-unit"
+    );
     await page.select("#direction", "scroll");
     await new Promise((resolve) => setTimeout(resolve, 500));
     // On for one frame, then off, and the highest the first unit got after.
@@ -67,7 +74,14 @@ test("a heading switched on for a frame in scroll mode still waves", async () =>
           const until = performance.now() + 1500;
           let most = 0;
           const frame = () => {
-            most = Math.max(most, Number(getComputedStyle(unit).getPropertyValue("--animate-weight-progress")));
+            most = Math.max(
+              most,
+              Number(
+                getComputedStyle(unit).getPropertyValue(
+                  "--animate-weight-progress"
+                )
+              )
+            );
             if (performance.now() < until) requestAnimationFrame(frame);
             else done(most);
           };
@@ -80,7 +94,7 @@ test("a heading switched on for a frame in scroll mode still waves", async () =>
               requestAnimationFrame(frame);
             });
           });
-        }),
+        })
     );
     assert.ok(peak > 0.5, `the band reached ${peak}`);
     assert.equal(await progress(page, "sec-use"), 0, "Use let go again");

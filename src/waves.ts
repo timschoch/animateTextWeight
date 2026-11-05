@@ -66,7 +66,9 @@ export const left = (waves: Waves): Waves => ({ ...waves, out: waves.in });
  * that would let go of all of it at once.
  */
 export const settled = (waves: Waves): Waves =>
-  waves.in === waves.out ? { ...waves, way: waves.in === "1" ? "-1" : "1" } : waves;
+  waves.in === waves.out
+    ? { ...waves, way: waves.in === "1" ? "-1" : "1" }
+    : waves;
 
 /** What the text weighs once both waves have arrived: 1 all of it, 0 none. */
 export const weight = (waves: Waves): number =>

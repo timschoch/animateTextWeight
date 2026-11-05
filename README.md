@@ -105,26 +105,26 @@ Set it on the element that holds the text itself. In `<a><span>Home</span></a>`,
 
 Plain `letter-spacing` works and is kept. So do `text-transform`, `text-align` (except `justify`), `font-variant`, `font-feature-settings`, right-to-left text and `vw` font sizes.
 
-| Property | Value | Default | Required |
-| --- | --- | --- | --- |
-| `--animate-weight-from` | Weight at rest. | The element's `font-weight` | no |
-| `--animate-weight-to` | Weight when on. | none | yes |
-| `--animate-weight` | `true` or `false`. Inherited, so an ancestor can set it. | `false` | no |
-| `--animate-weight-by` | `line` animates each line as one unit. `character` animates each character on its own. | `line` | no |
-| `--animate-weight-delay` | How long each unit waits after the one before it. Use it with `character` for a wave across the text, or with `line` for a wave down a block. Start with 5-20ms by character, 100ms+ by line. | `0s` | no |
-| `--animate-weight-direction` | Where the wave starts. See below. | `start` | no |
-| `--animate-weight-duration` | How long one unit takes to go from one weight to the other. With `prefers-reduced-motion: reduce`, duration and delay are set to `0s` and the weight changes at once. | `300ms` | no |
-| `--animate-weight-easing` | Timing function of the wave. | `linear` | no |
+| Property                     | Value                                                                                                                                                                                         | Default                     | Required |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | -------- |
+| `--animate-weight-from`      | Weight at rest.                                                                                                                                                                               | The element's `font-weight` | no       |
+| `--animate-weight-to`        | Weight when on.                                                                                                                                                                               | none                        | yes      |
+| `--animate-weight`           | `true` or `false`. Inherited, so an ancestor can set it.                                                                                                                                      | `false`                     | no       |
+| `--animate-weight-by`        | `line` animates each line as one unit. `character` animates each character on its own.                                                                                                        | `line`                      | no       |
+| `--animate-weight-delay`     | How long each unit waits after the one before it. Use it with `character` for a wave across the text, or with `line` for a wave down a block. Start with 5-20ms by character, 100ms+ by line. | `0s`                        | no       |
+| `--animate-weight-direction` | Where the wave starts. See below.                                                                                                                                                             | `start`                     | no       |
+| `--animate-weight-duration`  | How long one unit takes to go from one weight to the other. With `prefers-reduced-motion: reduce`, duration and delay are set to `0s` and the weight changes at once.                         | `300ms`                     | no       |
+| `--animate-weight-easing`    | Timing function of the wave.                                                                                                                                                                  | `linear`                    | no       |
 
 #### `--animate-weight-direction`
 
-| Value | Wave starts at ... |
-| --- | --- |
-| `start` | the start of the text. In right-to-left text that is the right side. In line mode it is the first line. |
-| `end` | the other end. |
-| `pointer` | the side the pointer came in from, and the weight goes back from the side the pointer left by. The pointer only sets the direction. You still need `--animate-weight: true` on `:hover` or another state to turn it on. |
-| `scroll` | the start when the page scrolls down, and the end when it scrolls up. |
-| `pointer scroll` | whichever of the two moved last. |
+| Value            | Wave starts at ...                                                                                                                                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `start`          | the start of the text. In right-to-left text that is the right side. In line mode it is the first line.                                                                                                                 |
+| `end`            | the other end.                                                                                                                                                                                                          |
+| `pointer`        | the side the pointer came in from, and the weight goes back from the side the pointer left by. The pointer only sets the direction. You still need `--animate-weight: true` on `:hover` or another state to turn it on. |
+| `scroll`         | the start when the page scrolls down, and the end when it scrolls up.                                                                                                                                                   |
+| `pointer scroll` | whichever of the two moved last.                                                                                                                                                                                        |
 
 #### Markup
 

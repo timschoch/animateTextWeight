@@ -7,13 +7,22 @@ import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer-core";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css" };
+const types = {
+  ".html": "text/html",
+  ".js": "text/javascript",
+  ".css": "text/css",
+};
 
 const server = http.createServer(async (request, response) => {
   try {
-    const path = join(root, decodeURIComponent(new URL(request.url, "http://x").pathname));
+    const path = join(
+      root,
+      decodeURIComponent(new URL(request.url, "http://x").pathname)
+    );
     const body = await readFile(path);
-    response.writeHead(200, { "content-type": types[extname(path)] ?? "application/octet-stream" });
+    response.writeHead(200, {
+      "content-type": types[extname(path)] ?? "application/octet-stream",
+    });
     response.end(body);
   } catch {
     response.writeHead(404);
@@ -26,7 +35,9 @@ const browser = await puppeteer.launch({ channel: "chrome", headless: true });
 try {
   const page = await browser.newPage();
   await page.setViewport({ width: 1600, height: 600, deviceScaleFactor: 2 });
-  await page.goto(`http://localhost:${server.address().port}/demo/compare.html`);
+  await page.goto(
+    `http://localhost:${server.address().port}/demo/compare.html`
+  );
   await page.waitForSelector("html[data-ready]");
   const compare = await page.$("#compare");
   await compare.screenshot({ path: join(root, "demo/compare.png") });
