@@ -12,7 +12,10 @@ Public npm package. Keep changes minimal — no internal-project scaffolding bey
 ## Rules
 
 - Conventional commits and branch-protection are enforced by lefthook git hooks (`lefthook.yml` extends `.skilly/lefthook.json`) — the scripts live in `.skilly/engine/verify/` (synced by skilly, never edit them here).
-- Pre-commit runs Prettier via lint-staged (`.lintstagedrc`).
+- Prettier runs on each staged file (pre-commit) and each agent edit (Claude Code PostToolUse), via `.skilly/engine/verify/lint-edited-file.mjs`. The repo is Prettier-clean: commit normally.
+- Files that a tool writes stay in `.prettierignore` (`pnpm-lock.yaml`, `CHANGELOG.md`, `.github/workflows/ci.yml`), or Prettier and the tool flip each other's format.
+- Use pnpm. `release.yml` keeps `npm publish` for npm trusted publishing (OIDC).
+- CI is the skilly-managed `.github/workflows/ci.yml`; it runs the verify `ci` stage. Add repo checks to `.skilly/verify.json`, never to `ci.yml`.
 - `dist/` is gitignored — it is built by `prepare`, not committed.
 
 ## Lessons
