@@ -2,9 +2,11 @@
   "tier": "sandbox",
   "bundles": [
     "workflow",
-    "tech-typescript"
+    "tech-typescript",
+    "npmjs"
   ],
   "review": {
     "bots": []
-  }
+  },
+  "hub": "v0.9.2"
 }
