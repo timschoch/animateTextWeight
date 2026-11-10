@@ -61,15 +61,26 @@ const render = (template, values) =>
 
 const isForTier = (file, tier) => TIERS.indexOf(tier) >= TIERS.indexOf(file.tier);
 
+// The Managed files the Sync owns at `tier`. A keepsOwn file can be the Consumer's at any tier.
+export const listSyncOwnedPaths = (tier) =>
+  MANAGED_FILES.filter((file) => isForTier(file, tier) && !file.keepsOwn).map(({ path }) => path);
+
 // The repo secrets the Managed files of `tier` read. Every run has GITHUB_TOKEN.
 export function listManagedSecrets(templatesDir, tier) {
   const names = new Set();
-  for (const file of MANAGED_FILES.filter((item) => isForTier(item, tier))) {
-    const template = readFileSync(join(templatesDir, file.template), 'utf8');
+  for (const template of listTierTemplates(templatesDir, tier))
     for (const [, name] of template.matchAll(/\bsecrets\.(\w+)/g)) if (name !== 'GITHUB_TOKEN') names.add(name);
-  }
   return [...names].sort();
 }
+
+// claude-code-action trades an OIDC token for a token of the Claude GitHub App, so the App must be on the repo.
+export const hasClaudeCodeAction = (templatesDir, tier) =>
+  listTierTemplates(templatesDir, tier).some((template) => /uses: anthropics\/claude-code-action@/.test(template));
+
+const listTierTemplates = (templatesDir, tier) =>
+  MANAGED_FILES.filter((file) => isForTier(file, tier)).map((file) =>
+    readFileSync(join(templatesDir, file.template), 'utf8'),
+  );
 
 /**
  * Writes the Managed files of `tier` into `cwd` from `templatesDir`, and deletes the ones the

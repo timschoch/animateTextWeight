@@ -48,7 +48,7 @@ import { findMatch, listChangedFiles } from './changed-files.mjs';
 import { defaultBranch } from './default-branch.mjs';
 import { mergeConfig } from './merge-config.mjs';
 
-const TIERS = ['sandbox', 'tool', 'product'];
+const TIERS = ['config', 'sandbox', 'tool', 'product'];
 const DEFAULTS_PATH = join(dirname(fileURLToPath(import.meta.url)), 'verify.json');
 const MARKERS = [join('.skilly', 'config.json'), join('.skilly', 'verify.json')];
 

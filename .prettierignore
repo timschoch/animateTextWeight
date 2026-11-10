@@ -16,7 +16,3 @@ skills-lock.json
 # skilly-owned files
 package-lock.json
 yarn.lock
-.github/workflows/ai-review.yml
-.github/dependabot.yml
-.github/workflows/nightly.yml
-.github/workflows/release.yml

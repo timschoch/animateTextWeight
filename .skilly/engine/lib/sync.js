@@ -15,6 +15,7 @@ import { HUB_REPO } from './constants.js';
 import { addFormatterIgnores } from './formatter-ignores.js';
 import { HOOK_PATHS, writeHooks } from './hooks.js';
 import { MANAGED_PATHS, writeManagedFiles } from './managed-files.js';
+import { MCP_PATHS, writeMcpServers } from './mcp.js';
 import { matchName } from './match.js';
 import * as packageManager from './package-manager.js';
 import { validateSettings } from './repo-settings.js';
@@ -26,7 +27,7 @@ import { updateRules } from './update-rules.js';
 
 // The Sync module (ADR-0008 decisions 17 to 19). A checkout, its
 // .skilly/config.json and one Release snapshot go in. Skills, Router rules,
-// the Engine copy, the Managed files and the skilly hook entries come out, plus
+// the Engine copy, the Managed files, the skilly hook entries and MCP servers come out, plus
 // the Sync report. It never prompts and never commits: callers own commit, push
 // and the Sync PR.
 const ENGINE_DIR = join('.skilly', 'engine');
@@ -42,6 +43,7 @@ const OWNED_PATHS = [
   '.gitattributes',
   ...MANAGED_PATHS,
   ...HOOK_PATHS,
+  ...MCP_PATHS,
 ];
 const FORMATTER_FILES = ['.prettierignore', 'biome.json', 'biome.jsonc'];
 
@@ -203,9 +205,10 @@ export function sync({
 
   const hash = writeEngine(cwd, join(dir, 'engine'));
   // The hooks pin pnpm in package.json first: the workflows render from the final one.
-  writeHooks(cwd, { bundles: wanted.bundles, bundlesDir, refreshLock });
+  writeHooks(cwd, { bundles: wanted.bundles, bundlesDir, tier: config.tier, refreshLock });
+  writeMcpServers(cwd, { bundles: wanted.bundles, bundlesDir });
   writeManagedFiles(cwd, join(dir, 'engine', 'templates'), config.tier);
-  addFormatterIgnores(cwd);
+  addFormatterIgnores(cwd, config.tier);
   skillyFile.write(cwd, { ...config, hub: release ?? config.hub });
 
   const after = fileContents(cwd, [...OWNED_PATHS, ...FORMATTER_FILES]);
@@ -216,6 +219,6 @@ export function sync({
     skills: { added: added.sort(), removed, updated: [...updated].sort() },
     files: files.sort(),
     engine: { hash },
-    settings: repo ? validateSettings(repo) : null,
+    settings: repo ? validateSettings(repo, config.tier) : null,
   };
 }

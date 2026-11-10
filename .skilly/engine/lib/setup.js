@@ -113,7 +113,7 @@ function prepareTree(tree, config) {
 // is already gone.
 const setupBody = (report) =>
   [
-    `Sets up skilly at Release ${report.release.after}. A person merges it once \`ci / verify\` is green.`,
+    `Sets up skilly at Release ${report.release.after}. A person merges it once its checks are green.`,
     ...reportSections({ ...report, settings: null }),
     '',
   ].join('\n');
@@ -188,7 +188,7 @@ export function setup({
 
   // Settings last: the ruleset requires `verify`, and only the Setup PR brings
   // the ci.yml that reports it. A failed Sync leaves the default branch open.
-  const settings = applySettings(repo);
+  const settings = applySettings(repo, config.tier);
   for (const { setting, want } of settings.drift) log(`set ${setting}: ${JSON.stringify(want)}`);
   for (const { setting, reason } of settings.unavailable) log(`unavailable: ${setting}: ${reason}`);
   return { invite, settings, report, pr };
