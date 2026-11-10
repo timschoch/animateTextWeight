@@ -114,7 +114,7 @@ The file is optional. Check the result with `--config` or `<stage> --steps`.
 
 ## Tier
 
-`tier` in `.skilly/config.json`, default `sandbox`, order `sandbox` < `tool` < `product`. A step's `tier` is the minimum a repo needs to run it; below that the step is skipped. A stage's `tier` is that rule for the whole stage: below it nothing runs and the exit is 0. Tier sets the size of the net, not the standard.
+`tier` in `.skilly/config.json`, default `sandbox`, order `config` < `sandbox` < `tool` < `product`. A `config` repo has no git hooks and no CI: only the agent push hook calls `verify push` there, and its steps above `config` skip. A step's `tier` is the minimum a repo needs to run it; below that the step is skipped. A stage's `tier` is that rule for the whole stage: below it nothing runs and the exit is 0. Tier sets the size of the net, not the standard.
 
 ## Target
 

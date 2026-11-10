@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { HUB_OWNERS, HUB_REPO } from './constants.js';
 import { ghCli } from './delivery.js';
-import { listManagedSecrets } from './managed-files.js';
+import { hasClaudeCodeAction, listManagedSecrets } from './managed-files.js';
 import { detectPackageManager, namesNoPackageManager } from './package-manager.js';
 import { validateSettings } from './repo-settings.js';
 import { resolveBundles } from './resolve.js';
@@ -98,6 +98,7 @@ const attempt = (action) => {
 // The preflight (ADR-0009 decision 2): every check the apply phase needs to
 // pass, read-only. Returns [{ check, ok, detail }]. A check that needs a
 // failed one is left out. Any red check stops Setup before the apply phase.
+// ok null: the gh login cannot check it, so detail is a step for the person.
 export function listPreflightChecks({ cwd, snapshotDir, repo = selfSource(cwd), gh = ghCli(cwd) }) {
   const checks = [];
   const add = (check, ok, detail) => checks.push({ check, ok, detail });
@@ -130,7 +131,7 @@ export function listPreflightChecks({ cwd, snapshotDir, repo = selfSource(cwd), 
   }
 
   if (repo && !login.error) {
-    const { unavailable } = validateSettings(repo);
+    const { unavailable } = validateSettings(repo, config.value?.tier);
     if (!unavailable.length) add('repo settings', true, 'every setting readable');
     for (const { setting, reason } of unavailable) add('repo settings', false, `${setting}: ${reason}`);
 
@@ -144,6 +145,10 @@ export function listPreflightChecks({ cwd, snapshotDir, repo = selfSource(cwd), 
       else if (missing.length)
         add('secrets', false, `missing ${missing.join(', ')}. Set each: gh secret set <name> --repo ${repo}`);
       else add('secrets', true, needed.join(', ') || 'none needed');
+
+      // A person's gh token cannot list App installs, and the action fails without the App.
+      if (hasClaudeCodeAction(join(snapshotDir, 'engine', 'templates'), config.value.tier))
+        add('Claude App', null, `the gh login cannot check it. Install https://github.com/apps/claude on ${repo}`);
     }
   }
 
