@@ -29,12 +29,11 @@
     "build": "tsc",
     "test": "tsc && node --test test/band.test.mjs test/waves.test.mjs",
     "test:browser": "tsc && node --test test/*.browser.test.mjs",
-    "prepare": "(test ! -e .git || ! command -v lefthook >/dev/null || lefthook install --reset-hooks-path) && tsc",
+    "prepare": "tsc",
     "demo": "tsc && npx -y serve -l 3000 .",
     "compare": "tsc && node scripts/compare.mjs"
   },
   "devDependencies": {
-    "lefthook": "^2.2.2",
     "prettier": "^3.9.6",
     "puppeteer-core": "^25.12.0",
     "typescript": "^6.0.3"
